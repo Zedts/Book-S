@@ -1,4 +1,4 @@
-import Home from '@/src/main/home';
+import Landing from '@/src/main/landing';
 import Tes from '@/src/main/tes';
 
 type SearchParams = {
@@ -20,6 +20,6 @@ export default async function Page({ searchParams }: PageProps) {
   }
 
   return (
-        <Home />
+        <Landing />
   );
 }
