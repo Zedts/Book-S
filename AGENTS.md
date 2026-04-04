@@ -8,6 +8,10 @@ Also now nextjs doesn't use middleware anymore, but use proxy.ts instead (i use 
 
 ## Workflow Orchestration
 
+### Honorable Mention
+- Don't comment out the code unless necessary.
+- Comment only function that complex or have some logic that need explanation
+
 ### 1. Plan Mode Default
 - Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
 - If something goes sideways, STOP and re-plan immediately - don't keep pushing
