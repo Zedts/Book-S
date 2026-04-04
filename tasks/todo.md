@@ -1,29 +1,20 @@
-# Landing Page Book'S — Task Tracker
+# Task: Navbar Links & About Us Page
 
-## Phase 1 — CSS Foundation + Font Setup
-- [x] Update `globals.css`: keyframes blob/float, glass-panel/card, text-gradient, on-load-reveal, reveal/active, stagger, no-scrollbar, delay classes
-- [x] Update `layout.tsx`: Plus Jakarta Sans Google Font import, update metadata
+## Phase 1 — Add section IDs & update Navbar links
+- [x] Add `id="koleksi"` to BestSellersSection `<section>`
+- [x] Add `id="kategori"` to CategoriesSection `<section>`
+- [x] Update Navbar: Beranda → `/`, Koleksi → smooth scroll `#koleksi`, Kategori → smooth scroll `#kategori`, Tentang Kami → `/about-us`
+- [x] Active state derived dynamically (pathname + searchParams)
+- [x] Smooth scroll on landing, full navigation from other pages
 
-## Phase 2 — Reusable Hooks
-- [x] `src/hooks/useScrollReveal.ts` — IntersectionObserver for .reveal elements
-- [x] `src/hooks/useNavbarScroll.ts` — navbar scroll shrink state
+## Phase 2 — Build About Us page
+- [x] Implement AboutUs page matching landing.tsx design system
+- [x] Background blobs, Navbar, Footer – same as landing
+- [x] useScrollReveal applied
+- [x] Content from ref.html updated: tech stack → Next.js + TailwindCSS v4 + TypeScript
+- [x] Hero section, Focus cards, Stats banner
 
-## Phase 3 — Types
-- [x] `src/types/landing.ts` — Book, Category, FooterLink interfaces
-
-## Phase 4 — Components
-- [x] `src/components/landing/Navbar.tsx`
-- [x] `src/components/landing/HeroSection.tsx`
-- [x] `src/components/landing/CategoriesSection.tsx`
-- [x] `src/components/landing/BestSellersSection.tsx`
-- [x] `src/components/landing/NewsletterSection.tsx`
-- [x] `src/components/landing/Footer.tsx`
-
-## Phase 5 — Assemble + Verify
-- [x] Update `src/main/landing.tsx` to compose all sections
-- [x] `yarn lint` → 0 errors, 5 acceptable warnings (no-img-element, no-page-custom-font — false positives for App Router)
-- [x] `yarn build` → Successful ✅
-
-## Review
-
-All sections render correctly matching ref.html exactly. Visual verification passed via browser subagent screenshot.
+## Phase 3 — Verify
+- [x] Build passes cleanly (no errors)
+- [x] Fragment key warning fixed
+- [x] Lint errors resolved

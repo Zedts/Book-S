@@ -54,7 +54,7 @@ const BEST_SELLERS: Book[] = [
 
 export default function BestSellersSection() {
   return (
-    <section className="container mx-auto px-6 lg:px-12 mt-24 md:mt-32">
+    <section id="koleksi" className="container mx-auto px-6 lg:px-12 mt-24 md:mt-32">
       <SectionHeader />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
         {BEST_SELLERS.map((book) => (

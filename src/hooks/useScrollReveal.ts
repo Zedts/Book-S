@@ -9,6 +9,11 @@ const OBSERVER_OPTIONS: IntersectionObserverInit = {
 
 export function useScrollReveal() {
   useEffect(() => {
+    // Trigger initial on-load animations
+    const loadTimer = setTimeout(() => {
+      document.body.classList.add("is-loaded");
+    }, 100);
+
     const revealElements = document.querySelectorAll<HTMLElement>(".reveal");
 
     const observer = new IntersectionObserver((entries) => {
@@ -21,6 +26,9 @@ export function useScrollReveal() {
 
     revealElements.forEach((el) => observer.observe(el));
 
-    return () => observer.disconnect();
+    return () => {
+      clearTimeout(loadTimer);
+      observer.disconnect();
+    };
   }, []);
 }

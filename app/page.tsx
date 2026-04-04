@@ -1,5 +1,5 @@
 import Landing from '@/src/main/landing';
-import Tes from '@/src/main/tes';
+import Aboutus from '@/src/main/about-us';
 
 type SearchParams = {
   view?: string;
@@ -13,9 +13,9 @@ export default async function Page({ searchParams }: PageProps) {
   const resolvedParams = searchParams ? await searchParams : undefined;
   const view = resolvedParams?.view;
 
-  if (view === 'tes') {
+  if (view === 'about-us') {
     return (
-        <Tes />
+        <Aboutus />
     );
   }
 

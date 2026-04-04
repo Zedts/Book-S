@@ -11,7 +11,7 @@ const CATEGORIES: Category[] = [
 
 export default function CategoriesSection() {
   return (
-    <section className="container mx-auto px-6 lg:px-12 mt-20 md:mt-32 reveal">
+    <section id="kategori" className="container mx-auto px-6 lg:px-12 mt-20 md:mt-32 reveal">
       <div className="flex items-center justify-between mb-6 md:mb-10">
         <h2 className="text-2xl md:text-3xl font-bold text-slate-800">
           Eksplorasi Kategori
