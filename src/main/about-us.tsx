@@ -3,6 +3,7 @@
 import { Fragment } from "react";
 import { GraduationCap, Layout, Code2, Smartphone, BookOpen } from "lucide-react";
 import GuestLayout from "@/src/components/layout/GuestLayout";
+import { GlassCard } from "@/src/components/ui/GlassCard";
 
 const FOCUS_CARDS = [
   {
@@ -156,28 +157,23 @@ function FocusCard({ card }: { card: FocusCard }) {
   const Icon = card.icon;
 
   return (
-    <div
-      className={`glass-card p-8 rounded-3xl border border-white/60 hover:-translate-y-2 transition-transform duration-300 reveal ${card.staggerClass} relative overflow-hidden`}
+    <GlassCard
+      className={`p-8 rounded-3xl border-white/60 hover:-translate-y-2 transition-transform duration-300 reveal ${card.staggerClass}`}
+      glow={card.hasGlow}
     >
-      {card.hasGlow && (
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-slate-200 rounded-full blur-[40px] opacity-50 z-0" />
-      )}
-
-      <div className="relative z-10">
-        <div className="w-14 h-14 rounded-2xl bg-white/80 shadow-sm flex items-center justify-center mb-6">
-          <Icon className="w-7 h-7 text-slate-800" />
-        </div>
-        <h3 className="text-xl font-bold text-slate-800 mb-3">{card.title}</h3>
-        <p className="text-slate-600 text-sm leading-relaxed">{card.description}</p>
+      <div className="w-14 h-14 rounded-2xl bg-white/80 shadow-sm flex items-center justify-center mb-6">
+        <Icon className="w-7 h-7 text-slate-800" />
       </div>
-    </div>
+      <h3 className="text-xl font-bold text-slate-800 mb-3">{card.title}</h3> 
+      <p className="text-slate-600 text-sm leading-relaxed">{card.description}</p>
+    </GlassCard>
   );
 }
 
 function StatsBanner() {
   return (
     <section className="container mx-auto px-6 lg:px-12 mt-24 md:mt-32 reveal">
-      <div className="glass-panel rounded-[2rem] p-10 md:p-14 border border-white/70 shadow-xl flex flex-wrap md:flex-nowrap items-center justify-between gap-8 text-center md:text-left relative overflow-hidden">
+      <GlassCard className="rounded-[2rem] p-10 md:p-14 border-white/70 shadow-xl flex flex-wrap md:flex-nowrap items-center justify-between gap-8 text-center md:text-left relative overflow-hidden">
         <div className="absolute top-0 right-1/4 w-64 h-64 bg-slate-200 rounded-full mix-blend-multiply filter blur-[80px] opacity-40" />
 
         {STATS.map((stat, index) => (
@@ -194,7 +190,7 @@ function StatsBanner() {
             )}
           </Fragment>
         ))}
-      </div>
+      </GlassCard>
     </section>
   );
 }

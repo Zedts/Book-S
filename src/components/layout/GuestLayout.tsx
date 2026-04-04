@@ -1,8 +1,8 @@
 "use client";
 
 import { useScrollReveal } from "@/src/hooks/useScrollReveal";
-import Navbar from "@/src/components/landing/Navbar";
-import Footer from "@/src/components/landing/Footer";
+import Navbar from "@/src/components/layout/Navbar";
+import Footer from "@/src/components/layout/Footer";
 
 export default function GuestLayout({ children }: { children: React.ReactNode }) {
   useScrollReveal();
