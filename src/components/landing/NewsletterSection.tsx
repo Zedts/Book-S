@@ -12,7 +12,7 @@ export default function NewsletterSection() {
 
   return (
     <section className="container mx-auto px-6 lg:px-12 mt-24 md:mt-40 reveal">
-      <div className="glass-panel rounded-[2rem] p-8 md:p-16 text-center relative overflow-hidden border border-white/70 shadow-2xl">
+      <div className="bg-white/40 backdrop-blur-[16px] border border-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[2rem] p-8 md:p-16 text-center relative overflow-hidden">
         {/* Decorative blobs inside card */}
         <div className="absolute -top-10 -right-10 md:-top-20 md:-right-20 w-48 h-48 md:w-64 md:h-64 bg-slate-200 rounded-full mix-blend-multiply filter blur-[60px] md:blur-[80px] opacity-60" />
         <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-stone-200 rounded-full mix-blend-multiply filter blur-[60px] opacity-50" />

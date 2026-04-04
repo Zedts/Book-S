@@ -67,22 +67,18 @@ body {
    GLASSMORPHISM: Panel, Card & Badge variants
    ============================================ */
 
-/* Navbar floating pill — strong frost for content scrolling beneath */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+@utility glass-panel {
+  background-color: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 }
 
-/* Category chips & subtle card surfaces */
-.glass-card {
-  background: rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.05);
+@utility glass-card {
+  background-color: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.04);
 }
 
 /* Floating hero badges — maximum frost effect */

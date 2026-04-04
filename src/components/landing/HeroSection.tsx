@@ -29,7 +29,7 @@ function HeroText() {
   return (
     <div className="lg:w-[55%] flex flex-col items-start on-load-reveal delay-100 relative z-20">
       {/* Badge */}
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full glass-card text-[10px] md:text-xs font-bold uppercase tracking-wider mb-5 md:mb-6 text-slate-700 border border-white/60 shadow-sm">
+      <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/25 backdrop-blur-[12px] border border-white/40 shadow-[0_4px_24px_0_rgba(0,0,0,0.04)] text-[10px] md:text-xs font-bold uppercase tracking-wider mb-5 md:mb-6 text-slate-700">
         <Sparkles className="w-3 h-3 text-slate-800" />
         Koleksi Kurasi 2026
       </div>
@@ -64,7 +64,7 @@ function HeroText() {
           Jelajahi Koleksi
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </button>
-        <button className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-full font-semibold text-slate-700 hover:bg-white/50 glass-card transition-all flex items-center justify-center gap-2">
+        <button className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-full font-semibold text-slate-700 hover:bg-white/50 bg-white/25 backdrop-blur-[12px] border border-white/40 shadow-[0_4px_24px_0_rgba(0,0,0,0.04)] transition-all flex items-center justify-center gap-2">
           <PlayCircle className="w-4 h-4" /> Lihat Tur
         </button>
       </div>
@@ -120,7 +120,7 @@ function HeroVisual() {
 
 function SecondaryBookCard() {
   return (
-    <div className="absolute -left-6 md:-left-12 top-4 md:top-8 w-[200px] md:w-[240px] glass-badge p-2 rounded-2xl shadow-lg transform -rotate-12 opacity-90 animate-float-delayed z-10 scale-90">
+    <div className="absolute -left-6 md:-left-12 top-4 md:top-8 w-[200px] md:w-[240px] bg-white/65 backdrop-blur-[32px] backdrop-saturate-200 border border-white/80 shadow-[0_8px_32px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] p-2 rounded-2xl transform -rotate-12 opacity-90 animate-float-delayed z-10 scale-90">
       <div className="w-full aspect-[3/4] rounded-xl overflow-hidden relative shadow-inner">
         <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px] z-10" />
         <img
@@ -185,7 +185,7 @@ function MainBookCard() {
 function RatingBadge() {
   return (
     <div
-      className="absolute -right-4 md:-right-8 top-1/4 glass-badge pl-2 pr-4 py-2 rounded-full flex items-center gap-3 shadow-2xl z-30 animate-float"
+      className="absolute -right-4 md:-right-8 top-1/4 bg-white/65 backdrop-blur-[32px] backdrop-saturate-[200%] border border-white/80 shadow-[0_8px_32px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] pl-2 pr-4 py-2 rounded-full flex items-center gap-3 z-30 animate-float"
       style={{ animationDelay: "1.5s" }}
     >
       <div className="w-10 h-10 rounded-full bg-white/90 shadow-sm flex items-center justify-center relative">
@@ -203,7 +203,7 @@ function RatingBadge() {
 function CategoryBadge() {
   return (
     <div
-      className="absolute -left-2 md:-left-8 bottom-[20%] glass-badge px-4 py-3 rounded-2xl flex items-center gap-3 shadow-xl z-30 animate-float"
+      className="absolute -left-2 md:-left-8 bottom-[20%] bg-white/65 backdrop-blur-[32px] backdrop-saturate-[200%] border border-white/80 shadow-[0_8px_32px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] px-4 py-3 rounded-2xl flex items-center gap-3 z-30 animate-float"
       style={{ animationDelay: "0.5s" }}
     >
       <div className="bg-slate-800 text-white p-2.5 rounded-xl shadow-inner">

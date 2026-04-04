@@ -87,7 +87,7 @@ function SectionHeader() {
 function BookCard({ book }: { book: Book }) {
   return (
     <div className={`group cursor-pointer reveal ${book.staggerClass}`}>
-      <div className="relative aspect-[4/5] sm:aspect-[3/4] w-full rounded-3xl overflow-hidden glass-card p-2 md:p-3 mb-4 transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-2 border border-white/60">
+      <div className="relative aspect-[4/5] sm:aspect-[3/4] w-full rounded-3xl overflow-hidden bg-white/25 backdrop-blur-[12px] border border-white/40 shadow-[0_4px_24px_0_rgba(0,0,0,0.04)] p-2 md:p-3 mb-4 transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-2">
         <img
           src={book.imageUrl}
           alt={book.imageAlt}

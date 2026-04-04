@@ -34,7 +34,7 @@ export default function CategoriesSection() {
 function CategoryChip({ category }: { category: Category }) {
   return (
     <div
-      className={`glass-card px-5 py-3 md:px-6 md:py-4 rounded-2xl cursor-pointer hover:-translate-y-1 hover:bg-white/50 transition-all flex items-center gap-2 md:gap-3 reveal ${category.staggerClass} whitespace-nowrap shadow-sm border-white/50 border`}
+      className={`bg-white/25 backdrop-blur-[12px] border border-white/40 shadow-[0_4px_24px_0_rgba(0,0,0,0.04)] px-5 py-3 md:px-6 md:py-4 rounded-2xl cursor-pointer hover:-translate-y-1 hover:bg-white/50 transition-all flex items-center gap-2 md:gap-3 reveal ${category.staggerClass} whitespace-nowrap`}
     >
       <div className="w-2 h-2 rounded-full bg-slate-800" />
       <span className="text-sm md:text-base font-semibold text-slate-700">
