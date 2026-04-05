@@ -126,7 +126,7 @@ export default function Auth() {
                 <button
                   type="button"
                   onClick={toggleMode}
-                  className="text-slate-600 font-medium hover:text-slate-900 transition-colors text-sm"
+                  className="text-slate-600 font-medium hover:text-slate-900 transition-colors text-sm cursor-pointer"
                 >
                   {isLogin
                     ? "Belum punya akun? Daftar gratis"

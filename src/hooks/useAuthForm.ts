@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "@/src/lib/supabase";
+import { loginAction, registerAction } from "@/src/lib/actions/auth";
 
 export const useAuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -19,48 +19,35 @@ export const useAuthForm = () => {
     setError(null);
 
     try {
-      if (isLogin) {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (signInError) throw signInError;
-      } else {
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              full_name: fullName,
-              phone: phone,
-            }
-          }
-        });
-        if (signUpError) throw signUpError;
-      }
-
-      // Fetch user role
-      const { data: userRes } = await supabase.auth.getUser();
-      if (!userRes.user) throw new Error("Terjadi kesalahan saat mengambil data pengguna.");
-
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', userRes.user.id)
-        .single();
-        
-      if (userError) throw userError;
-
-      // Routing logic based on role
-      if (userData?.role === 'admin') {
-        window.location.href = '/admin/home';
-      } else {
-        window.location.href = '/user/home';
-      }
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('password', password);
       
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Terjadi kesalahan, silahkan coba lagi.';
-      setError(errorMessage);
+      let res;
+      if (isLogin) {
+        res = await loginAction(formData);
+      } else {
+        formData.append('fullName', fullName);
+        formData.append('phone', phone);
+        res = await registerAction(formData);
+      }
+
+      if (res.error) {
+        setError(res.error);
+        setLoading(false);
+        return;
+      }
+
+      if (res.success && res.role) {
+        // Routing logic based on role
+        if (res.role === 'admin') {
+          window.location.href = '/admin/home';
+        } else {
+          window.location.href = '/user/home';
+        }
+      }
+    } catch {
+      setError('Terjadi kesalahan yang tidak terduga pada server.');
       setLoading(false);
     }
   };

@@ -6,7 +6,7 @@ import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { useNavbarScroll } from "@/src/hooks/useNavbarScroll";
 import { useActiveSection } from "@/src/hooks/useActiveSection";
 import { useState, useEffect } from "react";
-import { supabase } from "@/src/lib/supabase";
+import { getSessionAction } from "@/src/lib/actions/auth";
 
 type NavLink = {
   label: string;
@@ -43,16 +43,9 @@ export default function Navbar() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const session = await getSessionAction();
         if (session) {
-          const { data: userData } = await supabase
-            .from('users')
-            .select('role')
-            .eq('id', session.user.id)
-            .single();
-          if (userData) {
-            setUserRole(userData.role);
-          }
+          setUserRole(session.role);
         }
       } catch (err) {
         console.error("Session check error", err);

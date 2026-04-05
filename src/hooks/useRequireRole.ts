@@ -1,26 +1,24 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/src/lib/supabase";
+import { getSessionAction, logoutAction } from "@/src/lib/actions/auth";
 
-export const useRequireRole = (requiredRole?: 'admin' | 'user') => {
+export const useRequireRole = (requiredRole?: 'admin' | 'users') => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAccess = async () => {
       try {
-        const { data: userRes } = await supabase.auth.getUser();
-        if (!userRes.user) {
+        const session = await getSessionAction();
+        if (!session) {
           window.location.href = '/auth';
           return;
         }
 
-        const { data: userData } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', userRes.user.id)
-          .single();
-
-        if (requiredRole === 'admin' && userData?.role !== 'admin') {
-          window.location.href = '/user/home';
+        if (requiredRole && session.role !== requiredRole) {
+          if (session.role === 'admin') {
+            window.location.href = '/admin/home';
+          } else {
+            window.location.href = '/user/home';
+          }
           return;
         }
 
@@ -34,7 +32,7 @@ export const useRequireRole = (requiredRole?: 'admin' | 'user') => {
   }, [requiredRole]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await logoutAction();
     window.location.href = '/auth';
   };
 
