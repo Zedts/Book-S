@@ -1,0 +1,165 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { 
+  Home, 
+  Compass, 
+  BookOpen, 
+  Heart, 
+  Settings, 
+  LogOut, 
+  Library,
+  ChevronRight,
+  ChevronLeft
+} from "lucide-react";
+import { cn } from "@/src/lib/utils";
+import { Button } from "@/src/components/ui/Button";
+import { useRequireRole } from "@/src/hooks/useRequireRole";
+
+interface NavItemProps {
+  href: string;
+  icon: React.ElementType;
+  label: string;
+  active?: boolean;
+  collapsed?: boolean;
+}
+
+function NavItem({ href, icon: Icon, label, active, collapsed }: NavItemProps) {
+  return (
+    <Link
+      href={href}
+      title={collapsed ? label : undefined}
+      className={cn(
+        "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group relative",
+        active 
+          ? "bg-slate-800 text-white shadow-lg shadow-slate-200" 
+          : "text-slate-500 hover:bg-white/50 hover:text-slate-800",
+        collapsed && "justify-center px-0 w-12 mx-auto"
+      )}
+    >
+      <Icon className={cn("w-5 h-5 transition-transform duration-300 group-hover:scale-110 shrink-0", active ? "text-white" : "text-slate-400 group-hover:text-slate-800")} />
+      {!collapsed && <span className="font-semibold text-sm truncate">{label}</span>}
+      {active && !collapsed && <ChevronRight className="w-4 h-4 ml-auto opacity-50" />}
+      
+      {active && collapsed && (
+        <span className="absolute -right-1 top-1/2 -translate-y-1/2 w-1 h-6 bg-slate-800 rounded-l-full" />
+      )}
+    </Link>
+  );
+}
+
+interface UserSidebarProps {
+  isCollapsed?: boolean;
+  onToggle?: () => void;
+  isMobile?: boolean;
+}
+
+export default function UserSidebar({ isCollapsed, onToggle, isMobile }: UserSidebarProps) {
+  const pathname = usePathname();
+  const { handleLogout, user } = useRequireRole();
+
+  const navItems = [
+    { href: "/user/home", icon: Home, label: "Beranda" },
+    { href: "#explore", icon: Compass, label: "Jelajahi" },
+    { href: "#my-books", icon: BookOpen, label: "Buku Saya" },
+    { href: "#favorites", icon: Heart, label: "Favorit" },
+    { href: "#library", icon: Library, label: "Perpustakaan" },
+  ];
+
+  return (
+    <aside 
+      className={cn(
+        "fixed left-0 top-0 h-screen bg-white/30 backdrop-blur-xl border-r border-white/40 p-6 flex flex-col z-50 transition-all duration-500 ease-in-out",
+        isCollapsed ? "w-24" : "w-72",
+        isMobile && !isCollapsed ? "translate-x-0" : isMobile ? "-translate-x-full" : "translate-x-0"
+      )}
+    >
+      {/* Brand & Toggle */}
+      <div className={cn("flex items-center gap-3 mb-10 px-2", isCollapsed ? "justify-center flex-col px-0" : "justify-between")}>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center shadow-lg shadow-slate-200 shrink-0">
+            <BookOpen className="w-6 h-6 text-white" />
+          </div>
+          {!isCollapsed && (
+            <div>
+              <h2 className="text-xl font-bold text-slate-800 leading-none">Book'S</h2>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Premium Store</span>
+            </div>
+          )}
+        </div>
+        
+        {!isMobile && (
+          <button 
+            onClick={onToggle}
+            className={cn(
+              "w-8 h-8 rounded-lg bg-white/50 border border-white/80 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-all",
+              isCollapsed && "mt-4"
+            )}
+          >
+            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          </button>
+        )}
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 space-y-2">
+        {!isCollapsed && (
+          <p className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Menu Utama</p>
+        )}
+        {navItems.map((item) => (
+          <NavItem 
+            key={item.label} 
+            href={item.href} 
+            icon={item.icon} 
+            label={item.label} 
+            active={pathname === item.href}
+            collapsed={isCollapsed}
+          />
+        ))}
+      </nav>
+
+      {/* Footer / Account */}
+      <div className="mt-auto space-y-4 pt-6 border-t border-white/40">
+        <NavItem 
+          href="#settings" 
+          icon={Settings} 
+          label="Pengaturan" 
+          active={pathname === "/settings"} 
+          collapsed={isCollapsed}
+        />
+        
+        <div className={cn(
+          "p-4 rounded-2xl bg-slate-800/10 border border-white/20 backdrop-blur-md transition-all duration-300",
+          isCollapsed ? "p-2 items-center flex flex-col gap-4" : ""
+        )}>
+          <div className={cn("flex items-center gap-3", isCollapsed ? "flex-col" : "mb-3")}>
+            <div className="w-10 h-10 rounded-full border-2 border-slate-200 shadow-sm overflow-hidden shrink-0">
+               <img src="https://i.pravatar.cc/100?img=12" alt="User" className="w-full h-full object-cover" />
+            </div>
+            {!isCollapsed && (
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-sm font-bold text-slate-800 truncate">{user?.fullName || "Regular User"}</p>
+                <p className="text-[10px] font-medium text-slate-500 truncate">Premium Member</p>
+              </div>
+            )}
+          </div>
+          
+          <Button 
+            onClick={handleLogout}
+            className={cn(
+              "w-full text-xs font-bold gap-2 h-10 transition-all duration-300 border shadow-sm",
+              isCollapsed 
+                ? "w-10 h-10 p-0 rounded-xl justify-center bg-white text-slate-600 border-slate-100 hover:bg-slate-50 hover:text-slate-900" 
+                : "py-2 px-4 bg-slate-100/80 text-slate-600 border-slate-200 hover:bg-slate-800 hover:text-white hover:border-slate-800"
+            )}
+            title={isCollapsed ? "Keluar" : undefined}
+          >
+            <LogOut className="w-4 h-4" />
+            {!isCollapsed && "Keluar"}
+          </Button>
+        </div>
+      </div>
+    </aside>
+  );
+}

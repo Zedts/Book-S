@@ -1,0 +1,50 @@
+"use client";
+
+import { Star, ArrowUpRight, Heart } from "lucide-react";
+import type { Book } from "@/src/types/landing";
+
+export default function BookCard({ book }: { book: Book }) {
+  return (
+    <div className={`group cursor-pointer reveal ${book.staggerClass}`}>
+      <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden bg-white/20 backdrop-blur-md border border-white/40 shadow-[0_4px_24px_0_rgba(0,0,0,0.04)] p-2 mb-3.5 transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-2">
+        <img
+          src={book.imageUrl}
+          alt={book.imageAlt}
+          className="w-full h-full object-cover rounded-xl"
+        />
+
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl flex flex-col items-center justify-center p-4">
+          <button className="bg-white text-slate-800 px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-lg mb-3">
+            Lihat Detail <ArrowUpRight className="w-4 h-4" />
+          </button>
+          <div className="absolute top-4 right-4 z-20 bg-white/80 backdrop-blur-sm p-2 rounded-full cursor-pointer hover:bg-white hover:scale-110 transition-all shadow-sm">
+            <Heart className="w-3.5 h-3.5 text-rose-500" />
+          </div>
+        </div>
+
+        {/* Rating badge */}
+        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-2 py-1 rounded-lg text-[10px] font-bold text-slate-800 flex items-center gap-1 shadow-sm">
+          <Star className="w-3 h-3 fill-slate-800 text-slate-800" /> {book.rating}
+        </div>
+      </div>
+
+      {/* Book info */}
+      <div className="px-1">
+        <div className="flex justify-between items-start mb-1">
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none">
+            {book.category}
+          </p>
+        </div>
+        <h3 className="text-sm font-extrabold text-slate-800 mb-1 group-hover:text-slate-600 transition-colors truncate">
+          {book.title}
+        </h3>
+        <p className="text-xs text-slate-500 font-medium mb-1.5">{book.author}</p>
+        <div className="flex items-center justify-between">
+           <p className="text-sm font-bold text-slate-900">{book.price}</p>
+           <span className="text-[9px] font-extrabold text-white bg-slate-800 px-1.5 py-0.5 rounded uppercase tracking-tighter">New</span>
+        </div>
+      </div>
+    </div>
+  );
+}

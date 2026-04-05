@@ -149,3 +149,8 @@ body.is-loaded .on-load-reveal {
 .stagger-2 { transition-delay: 200ms; }
 .stagger-3 { transition-delay: 300ms; }
 .stagger-4 { transition-delay: 400ms; }
+
+body.is-loaded .reveal {
+  opacity: 1;
+  transform: translateY(0);
+}

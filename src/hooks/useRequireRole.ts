@@ -3,6 +3,7 @@ import { getSessionAction, logoutAction } from "@/src/lib/actions/auth";
 
 export const useRequireRole = (requiredRole?: 'admin' | 'users') => {
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<{ id: string; role: string; fullName: string } | null>(null);
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -22,6 +23,7 @@ export const useRequireRole = (requiredRole?: 'admin' | 'users') => {
           return;
         }
 
+        setUser(session);
         setLoading(false);
       } catch {
         window.location.href = '/auth';
@@ -36,5 +38,5 @@ export const useRequireRole = (requiredRole?: 'admin' | 'users') => {
     window.location.href = '/auth';
   };
 
-  return { loading, handleLogout };
+  return { loading, user, handleLogout };
 };
