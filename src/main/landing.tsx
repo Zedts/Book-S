@@ -82,9 +82,6 @@ function HeroText() {
           Jelajahi Koleksi
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </button>
-        <button className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-full font-semibold text-slate-700 hover:bg-white/50 bg-white/25 backdrop-blur-md border border-white/40 shadow-[0_4px_24px_0_rgba(0,0,0,0.04)] transition-all flex items-center justify-center gap-2">
-          <PlayCircle className="w-4 h-4" /> Lihat Tur
-        </button>
       </div>
 
       {/* Social Proof */}
