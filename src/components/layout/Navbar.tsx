@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { useNavbarScroll } from "@/src/hooks/useNavbarScroll";
 import { useActiveSection } from "@/src/hooks/useActiveSection";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuthNavigation } from "@/src/hooks/useAuthNavigation";
 
 type NavLink = {
@@ -35,8 +35,34 @@ export default function Navbar() {
 
   const isLandingPage = pathname === "/" && !currentView;
   const isNotLandingPage = !isLandingPage;
-
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const paddingClass = isScrolled ? "py-3 md:py-4" : "py-5 md:py-6";
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isLandingPage) {
+      window.dispatchEvent(new CustomEvent("navbar-search", { detail: { query: searchQuery } }));
+    } else {
+      // Just an example. Or we redirect.
+      router.push(`/?search=${searchQuery}`);
+    }
+  };
+
+  const searchFormRef = useRef<HTMLFormElement>(null);
+
+  // Close search on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchFormRef.current && !searchFormRef.current.contains(e.target as Node)) {
+        setIsSearchOpen(false);
+      }
+    };
+    if (isSearchOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isSearchOpen]);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -115,9 +141,27 @@ export default function Navbar() {
 
             {/* Desktop & Mobile action buttons */}
             <div className="flex items-center gap-1.5 md:gap-4 text-slate-600">
-              <button className="p-1.5 md:p-2 hover:bg-white/50 rounded-full transition-colors" aria-label="Search">
-                <Search className="w-4.5 h-4.5 md:w-5 md:h-5" />
-              </button>
+              <form ref={searchFormRef} onSubmit={handleSearchSubmit} className="relative flex items-center">
+                <input 
+                  type="text"
+                  placeholder="Cari buku..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={`transition-all duration-300 outline-none bg-white/50 focus:bg-white border focus:border-slate-300 rounded-full text-sm pl-4 pr-10 ${
+                    isSearchOpen ? "w-32 md:w-48 py-1.5 md:py-2 opacity-100" : "w-0 py-1.5 md:py-2 opacity-0 border-transparent"
+                  }`} 
+                />
+                <button 
+                  type={isSearchOpen ? "submit" : "button"}
+                  className={`p-1.5 md:p-2 hover:bg-white/50 rounded-full transition-colors ${
+                    isSearchOpen ? "absolute right-0 top-1/2 -translate-y-1/2" : ""
+                  }`} 
+                  aria-label="Search"
+                  onClick={() => !isSearchOpen && setIsSearchOpen(true)}
+                >
+                  <Search className="w-4.5 h-4.5 md:w-5 md:h-5" />
+                </button>
+              </form>
               <button className="p-1.5 md:p-2 hover:bg-white/50 rounded-full transition-colors relative" aria-label="Cart">
                 <ShoppingBag className="w-4.5 h-4.5 md:w-5 md:h-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-slate-800 rounded-full border border-white" />

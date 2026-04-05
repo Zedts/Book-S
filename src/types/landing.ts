@@ -2,18 +2,24 @@ export interface Book {
   id: string;
   title: string;
   author: string;
-  category: string;
-  price: string;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  price: number;
   rating: number;
   imageUrl: string;
   imageAlt: string;
-  staggerClass: string;
+  description?: string;
+  isFeatured?: boolean;
+  stock?: number;
 }
 
 export interface Category {
   id: string;
-  label: string;
-  staggerClass: string;
+  slug: string;
+  name: string;
 }
 
 export interface FooterLink {
