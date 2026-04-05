@@ -174,23 +174,25 @@ function FocusCard({ card }: { card: FocusCard }) {
 function StatsBanner() {
   return (
     <section className="container mx-auto px-6 lg:px-12 mt-24 md:mt-32 reveal">
-      <GlassCard className="rounded-[2rem] p-10 md:p-14 border-white/70 shadow-xl flex flex-wrap md:flex-nowrap items-center justify-between gap-8 text-center md:text-left relative overflow-hidden">
-        <div className="absolute top-0 right-1/4 w-64 h-64 bg-slate-200 rounded-full mix-blend-multiply filter blur-[80px] opacity-40" />
+      <GlassCard className="rounded-[2rem] p-6 md:p-14 border-white/70 shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-1/4 w-64 h-64 bg-slate-200 rounded-full mix-blend-multiply filter blur-[80px] opacity-40 z-0" />
 
-        {STATS.map((stat, index) => (
-          <Fragment key={stat.label}>
-            <div className="w-full md:w-auto relative z-10 flex-1 text-center">
-              <p className="text-4xl md:text-5xl font-black text-slate-800 mb-2">{stat.value}</p>
-              <p className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-widest">
-                {stat.label}
-              </p>
-            </div>
+        <div className="flex flex-row flex-wrap md:flex-nowrap items-center justify-around md:justify-between gap-6 md:gap-8 relative z-10">
+          {STATS.map((stat, index) => (
+            <Fragment key={stat.label}>
+              <div className="flex-1 flex flex-col items-center justify-center text-center px-1 md:px-2">
+                <p className="text-4xl md:text-5xl font-black text-slate-800 mb-1 lg:mb-2">{stat.value}</p>
+                <p className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-widest leading-tight">
+                  {stat.label}
+                </p>
+              </div>
 
-            {index < STATS.length - 1 && (
-              <div className="hidden md:block w-px h-16 bg-slate-300/50" />
-            )}
-          </Fragment>
-        ))}
+              {index < STATS.length - 1 && (
+                <div className="w-px h-12 md:h-16 bg-slate-300/50 shrink-0" />
+              )}
+            </Fragment>
+          ))}
+        </div>
       </GlassCard>
     </section>
   );
