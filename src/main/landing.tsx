@@ -5,6 +5,7 @@ import { Sparkles, ArrowRight, PlayCircle, Heart, Star, Award, ArrowUpRight } fr
 import type { Book, Category } from "@/src/types/landing";
 import GuestLayout from "@/src/components/layout/GuestLayout";
 import { USER_CATEGORIES, FEATURED_BOOKS } from "@/src/lib/mock-data";
+import { useAuthNavigation } from "@/src/hooks/useAuthNavigation";
 
 
 export default function Landing() {
@@ -44,6 +45,8 @@ function HeroSection() {
 }
 
 function HeroText() {
+  const { handleAuthNavigation, isNavigating } = useAuthNavigation();
+
   return (
     <div className="lg:w-[55%] flex flex-col items-start on-load-reveal delay-100 relative z-20">
       {/* Badge */}
@@ -78,8 +81,12 @@ function HeroText() {
 
       {/* CTA Buttons */}
       <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto mb-8">
-        <button className="w-full sm:w-auto bg-slate-800 text-white px-8 py-3.5 md:py-4 rounded-full font-semibold hover:bg-slate-900 hover:shadow-xl hover:shadow-slate-300 transition-all flex items-center justify-center gap-2 group duration-300">
-          Jelajahi Koleksi
+        <button
+          onClick={handleAuthNavigation}
+          disabled={isNavigating}
+          className="w-full sm:w-auto bg-slate-800 text-white px-8 py-3.5 md:py-4 rounded-full font-semibold hover:bg-slate-900 hover:shadow-xl hover:shadow-slate-300 transition-all flex items-center justify-center gap-2 group duration-300 disabled:opacity-75 disabled:cursor-not-allowed"
+        >
+          {isNavigating ? "Memeriksa Sesi..." : "Jelajahi Koleksi"}
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </button>
       </div>
@@ -149,6 +156,8 @@ function SecondaryBookCard() {
 }
 
 function MainBookCard() {
+  const { handleAuthNavigation } = useAuthNavigation();
+
   return (
     <div className="relative w-60 md:w-70 bg-white/50 backdrop-blur-2xl p-4 rounded-3xl border-2 border-white/80 shadow-[0_20px_50px_rgba(15,23,42,0.15)] flex flex-col items-center z-20 animate-float transform translate-x-6 md:translate-x-12">
       <div className="w-full aspect-3/4 rounded-2xl overflow-hidden mb-4 relative group shadow-md">
@@ -168,7 +177,7 @@ function MainBookCard() {
 
         {/* Quick view on hover */}
         <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 group-hover:bottom-4 transition-all duration-500 z-20 opacity-0 group-hover:opacity-100 w-[80%]">
-          <button className="w-full bg-white/95 backdrop-blur-md text-slate-800 text-xs font-bold px-4 py-2.5 rounded-full shadow-lg hover:bg-slate-800 hover:text-white transition-colors">
+          <button onClick={handleAuthNavigation} className="w-full bg-white/95 backdrop-blur-md text-slate-800 text-xs font-bold px-4 py-2.5 rounded-full shadow-lg hover:bg-slate-800 hover:text-white transition-colors">
             Lihat Pratinjau
           </button>
         </div>
@@ -236,13 +245,15 @@ function CategoryBadge() {
 
 
 function CategoriesSection() {
+  const { handleAuthNavigation } = useAuthNavigation();
+
   return (
     <section id="kategori" className="container mx-auto px-6 lg:px-12 mt-20 md:mt-32 reveal">
       <div className="flex items-center justify-between mb-6 md:mb-10">
         <h2 className="text-2xl md:text-3xl font-bold text-slate-800">
           Eksplorasi Kategori
         </h2>
-        <button className="hidden md:flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors group">
+        <button onClick={handleAuthNavigation} className="hidden md:flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors group">
           Lihat Semua{" "}
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </button>
@@ -285,6 +296,8 @@ function BestSellersSection() {
 }
 
 function SectionHeader() {
+  const { handleAuthNavigation } = useAuthNavigation();
+
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-12 reveal">
       <div>
@@ -295,7 +308,7 @@ function SectionHeader() {
           Karya yang sedang hangat diperbincangkan komunitas.
         </p>
       </div>
-      <button className="hidden md:flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors group mt-4 md:mt-0">
+      <button onClick={handleAuthNavigation} className="hidden md:flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors group mt-4 md:mt-0">
         Lihat Semua{" "}
         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
       </button>
@@ -304,8 +317,10 @@ function SectionHeader() {
 }
 
 function BookCard({ book }: { book: Book }) {
+  const { handleAuthNavigation } = useAuthNavigation();
+
   return (
-    <div className={`group cursor-pointer reveal ${book.staggerClass}`}>
+    <div className={`group cursor-pointer reveal ${book.staggerClass}`} onClick={handleAuthNavigation}>
       <div className="relative aspect-4/5 sm:aspect-3/4 w-full rounded-3xl overflow-hidden bg-white/25 backdrop-blur-md border border-white/40 shadow-[0_4px_24px_0_rgba(0,0,0,0.04)] p-2 md:p-3 mb-4 transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-2">
         <img
           src={book.imageUrl}

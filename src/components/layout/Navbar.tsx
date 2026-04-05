@@ -6,7 +6,7 @@ import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { useNavbarScroll } from "@/src/hooks/useNavbarScroll";
 import { useActiveSection } from "@/src/hooks/useActiveSection";
 import { useState, useEffect } from "react";
-import { getSessionAction } from "@/src/lib/actions/auth";
+import { useAuthNavigation } from "@/src/hooks/useAuthNavigation";
 
 type NavLink = {
   label: string;
@@ -28,8 +28,7 @@ export default function Navbar() {
   const router = useRouter();
   const currentView = searchParams.get("view");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const { userRole, isCheckingSession, authPath } = useAuthNavigation();
   
   // Track which section is active via scroll position
   const activeSection = useActiveSection(["koleksi", "kategori"], 150);
@@ -38,23 +37,6 @@ export default function Navbar() {
   const isNotLandingPage = !isLandingPage;
 
   const paddingClass = isScrolled ? "py-3 md:py-4" : "py-5 md:py-6";
-
-  // Check user session
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const session = await getSessionAction();
-        if (session) {
-          setUserRole(session.role);
-        }
-      } catch (err) {
-        console.error("Session check error", err);
-      } finally {
-        setIsCheckingSession(false);
-      }
-    };
-    checkSession();
-  }, []);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -142,7 +124,7 @@ export default function Navbar() {
               </button>
               
               <Link
-                href={userRole === "admin" ? "/admin/home" : (userRole === "users" ? "/user/home" : "/auth")}
+                href={authPath}
                 className="hidden md:flex items-center justify-center px-5 py-2.5 rounded-full bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm transition-colors shadow-sm ml-2 w-25"
               >
                 {isCheckingSession ? (
@@ -189,7 +171,7 @@ export default function Navbar() {
           <div className="flex flex-col gap-4 mt-8 pt-8 border-t border-slate-200">
 
             <Link
-              href={userRole === "admin" ? "/admin/home" : (userRole === "users" ? "/user/home" : "/auth")}
+              href={authPath}
               onClick={() => setIsMobileMenuOpen(false)}
               className="w-full py-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-center transition-colors shadow-lg flex justify-center items-center"
             >
