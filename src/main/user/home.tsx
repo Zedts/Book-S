@@ -105,7 +105,7 @@ export default function UserHome() {
         <div className="flex items-center justify-between mb-8">
           <h3 className="text-2xl font-extrabold text-slate-800">Eksplorasi Kategori</h3>
           <button className="hidden md:flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors group">
-            Lihat dan lainnya{" "}
+            Lihat semua{" "}
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
@@ -139,7 +139,7 @@ export default function UserHome() {
             <p className="text-sm text-slate-500 font-medium">Banyak peminat, jangan sampai ketinggalan!</p>
           </div>
           <button className="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors group">
-            Lihat dan lainnya{" "}
+            Lihat semua{" "}
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
@@ -159,7 +159,7 @@ export default function UserHome() {
             <p className="text-sm text-slate-500 font-medium">Koleksi terbaru minggu ini</p>
           </div>
           <button className="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors group">
-            Lihat dan lainnya{" "}
+            Lihat semua{" "}
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
