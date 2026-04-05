@@ -318,7 +318,7 @@ function BookCard({ book }: { book: Book }) {
 
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-white/20 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3xl flex items-center justify-center">
-          <button className="bg-slate-800 text-white px-5 py-2.5 md:px-6 md:py-3 rounded-full text-sm md:text-base font-semibold flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-lg">
+          <button className="bg-white/95 backdrop-blur-md text-slate-800 text-xs font-bold px-5 py-2.5 rounded-full shadow-lg hover:bg-slate-800 hover:text-white transition-all duration-300 flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0">
             Lihat Detail <ArrowUpRight className="w-4 h-4" />
           </button>
         </div>

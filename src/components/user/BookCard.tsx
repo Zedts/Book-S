@@ -16,7 +16,7 @@ export default function BookCard({ book }: { book: Book }) {
 
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl flex flex-col items-center justify-center p-4">
-          <button className="bg-white text-slate-800 px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-lg mb-3">
+          <button className="bg-white/95 backdrop-blur-md text-slate-800 text-xs font-bold px-5 py-2.5 rounded-full shadow-lg hover:bg-slate-800 hover:text-white transition-all duration-300 flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 mb-3">
             Lihat Detail <ArrowUpRight className="w-4 h-4" />
           </button>
           <div className="absolute top-4 right-4 z-20 bg-white/80 backdrop-blur-sm p-2 rounded-full cursor-pointer hover:bg-white hover:scale-110 transition-all shadow-sm">
