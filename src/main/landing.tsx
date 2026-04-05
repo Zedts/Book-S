@@ -1,8 +1,10 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import { useEffect, useState, type FormEvent } from "react";
 import { Sparkles, ArrowRight, PlayCircle, Heart, Star, Award, ArrowUpRight } from "lucide-react";
 import type { Book, Category } from "@/src/types/landing";
 import GuestLayout from "@/src/components/layout/GuestLayout";
+import { USER_CATEGORIES, FEATURED_BOOKS } from "@/src/lib/mock-data";
 
 
 export default function Landing() {
@@ -45,7 +47,7 @@ function HeroText() {
   return (
     <div className="lg:w-[55%] flex flex-col items-start on-load-reveal delay-100 relative z-20">
       {/* Badge */}
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/25 backdrop-blur-[12px] border border-white/40 shadow-[0_4px_24px_0_rgba(0,0,0,0.04)] text-[10px] md:text-xs font-bold uppercase tracking-wider mb-5 md:mb-6 text-slate-700">
+      <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/25 backdrop-blur-md border border-white/40 shadow-[0_4px_24px_0_rgba(0,0,0,0.04)] text-[10px] md:text-xs font-bold uppercase tracking-wider mb-5 md:mb-6 text-slate-700">
         <Sparkles className="w-3 h-3 text-slate-800" />
         Koleksi Kurasi 2026
       </div>
@@ -80,7 +82,7 @@ function HeroText() {
           Jelajahi Koleksi
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </button>
-        <button className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-full font-semibold text-slate-700 hover:bg-white/50 bg-white/25 backdrop-blur-[12px] border border-white/40 shadow-[0_4px_24px_0_rgba(0,0,0,0.04)] transition-all flex items-center justify-center gap-2">
+        <button className="w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-full font-semibold text-slate-700 hover:bg-white/50 bg-white/25 backdrop-blur-md border border-white/40 shadow-[0_4px_24px_0_rgba(0,0,0,0.04)] transition-all flex items-center justify-center gap-2">
           <PlayCircle className="w-4 h-4" /> Lihat Tur
         </button>
       </div>
@@ -119,12 +121,12 @@ function SocialProof() {
 
 function HeroVisual() {
   return (
-    <div className="lg:w-[45%] relative h-[450px] md:h-[550px] w-full flex items-center justify-center on-load-reveal delay-300 mt-10 lg:mt-0">
+    <div className="lg:w-[45%] relative h-112.5 md:h-137.5 w-full flex items-center justify-center on-load-reveal delay-300 mt-10 lg:mt-0">
       {/* Glowing orbs for depth */}
-      <div className="absolute w-[250px] h-[250px] md:w-[320px] md:h-[320px] bg-slate-300 rounded-full filter blur-[70px] opacity-70 translate-x-10 translate-y-10" />
-      <div className="absolute w-[200px] h-[200px] md:w-[250px] md:h-[250px] bg-stone-300 rounded-full filter blur-[60px] opacity-60 -translate-x-10 -translate-y-10" />
+      <div className="absolute w-62.5 h-62.5 md:w-80 md:h-80 bg-slate-300 rounded-full filter blur-[70px] opacity-70 translate-x-10 translate-y-10" />
+      <div className="absolute w-50 h-50 md:w-62.5 md:h-62.5 bg-stone-300 rounded-full filter blur-[60px] opacity-60 -translate-x-10 -translate-y-10" />
 
-      <div className="relative flex items-center justify-center w-full max-w-[320px] md:max-w-[420px] mt-8">
+      <div className="relative flex items-center justify-center w-full max-w-[320px] md:max-w-105 mt-8">
         <SecondaryBookCard />
         <MainBookCard />
         <RatingBadge />
@@ -136,8 +138,8 @@ function HeroVisual() {
 
 function SecondaryBookCard() {
   return (
-    <div className="absolute -left-6 md:-left-12 top-4 md:top-8 w-[200px] md:w-[240px] bg-white/65 backdrop-blur-[32px] backdrop-saturate-200 border border-white/80 shadow-[0_8px_32px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] p-2 rounded-2xl transform -rotate-12 opacity-90 animate-float-delayed z-10 scale-90">
-      <div className="w-full aspect-[3/4] rounded-xl overflow-hidden relative shadow-inner">
+    <div className="absolute -left-6 md:-left-12 top-4 md:top-8 w-50 md:w-60 bg-white/65 backdrop-blur-[32px] backdrop-saturate-200 border border-white/80 shadow-[0_8px_32px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] p-2 rounded-2xl transform -rotate-12 opacity-90 animate-float-delayed z-10 scale-90">
+      <div className="w-full aspect-3/4 rounded-xl overflow-hidden relative shadow-inner">
         <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px] z-10" />
         <img
           src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=400&h=600"
@@ -151,10 +153,10 @@ function SecondaryBookCard() {
 
 function MainBookCard() {
   return (
-    <div className="relative w-[240px] md:w-[280px] bg-white/50 backdrop-blur-2xl p-4 rounded-3xl border-2 border-white/80 shadow-[0_20px_50px_rgba(15,23,42,0.15)] flex flex-col items-center z-20 animate-float transform translate-x-6 md:translate-x-12">
-      <div className="w-full aspect-[3/4] rounded-2xl overflow-hidden mb-4 relative group shadow-md">
+    <div className="relative w-60 md:w-70 bg-white/50 backdrop-blur-2xl p-4 rounded-3xl border-2 border-white/80 shadow-[0_20px_50px_rgba(15,23,42,0.15)] flex flex-col items-center z-20 animate-float transform translate-x-6 md:translate-x-12">
+      <div className="w-full aspect-3/4 rounded-2xl overflow-hidden mb-4 relative group shadow-md">
         {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 z-10" />
+        <div className="absolute inset-0 bg-linear-to-t from-slate-900/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 z-10" />
 
         <img
           src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=600&h=800"
@@ -201,7 +203,7 @@ function MainBookCard() {
 function RatingBadge() {
   return (
     <div
-      className="absolute -right-4 md:-right-8 top-1/4 bg-white/65 backdrop-blur-[32px] backdrop-saturate-[200%] border border-white/80 shadow-[0_8px_32px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] pl-2 pr-4 py-2 rounded-full flex items-center gap-3 z-30 animate-float"
+      className="absolute -right-4 md:-right-8 top-1/4 bg-white/65 backdrop-blur-[32px] backdrop-saturate-200 border border-white/80 shadow-[0_8px_32px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] pl-2 pr-4 py-2 rounded-full flex items-center gap-3 z-30 animate-float"
       style={{ animationDelay: "1.5s" }}
     >
       <div className="w-10 h-10 rounded-full bg-white/90 shadow-sm flex items-center justify-center relative">
@@ -219,7 +221,7 @@ function RatingBadge() {
 function CategoryBadge() {
   return (
     <div
-      className="absolute -left-2 md:-left-8 bottom-[20%] bg-white/65 backdrop-blur-[32px] backdrop-saturate-[200%] border border-white/80 shadow-[0_8px_32px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] px-4 py-3 rounded-2xl flex items-center gap-3 z-30 animate-float"
+      className="absolute -left-2 md:-left-8 bottom-[20%] bg-white/65 backdrop-blur-[32px] backdrop-saturate-200 border border-white/80 shadow-[0_8px_32px_rgba(15,23,42,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] px-4 py-3 rounded-2xl flex items-center gap-3 z-30 animate-float"
       style={{ animationDelay: "0.5s" }}
     >
       <div className="bg-slate-800 text-white p-2.5 rounded-xl shadow-inner">
@@ -236,14 +238,6 @@ function CategoryBadge() {
 }
 
 
-const CATEGORIES: Category[] = [
-  { id: "fiksi", label: "Fiksi Sastra", staggerClass: "stagger-1" },
-  { id: "non-fiksi", label: "Non-Fiksi", staggerClass: "stagger-2" },
-  { id: "pengembangan-diri", label: "Pengembangan Diri", staggerClass: "stagger-3" },
-  { id: "seni-desain", label: "Seni & Desain", staggerClass: "stagger-4" },
-  { id: "bisnis", label: "Bisnis Ekonomi", staggerClass: "stagger-1" },
-];
-
 function CategoriesSection() {
   return (
     <section id="kategori" className="container mx-auto px-6 lg:px-12 mt-20 md:mt-32 reveal">
@@ -258,7 +252,7 @@ function CategoriesSection() {
       </div>
 
       <div className="flex overflow-x-auto pb-4 pt-2 -mx-6 px-6 lg:mx-0 lg:px-0 lg:flex-wrap gap-3 md:gap-4 no-scrollbar">
-        {CATEGORIES.map((category) => (
+        {USER_CATEGORIES.filter(c => c.id !== "all").map((category) => (
           <CategoryChip key={category.id} category={category} />
         ))}
       </div>
@@ -269,7 +263,7 @@ function CategoriesSection() {
 function CategoryChip({ category }: { category: Category }) {
   return (
     <div
-      className={`bg-white/25 backdrop-blur-[12px] border border-white/40 shadow-[0_4px_24px_0_rgba(0,0,0,0.04)] px-5 py-3 md:px-6 md:py-4 rounded-2xl cursor-pointer hover:-translate-y-1 hover:bg-white/50 transition-all flex items-center gap-2 md:gap-3 reveal ${category.staggerClass} whitespace-nowrap`}
+      className={`bg-white/25 backdrop-blur-md border border-white/40 shadow-[0_4px_24px_0_rgba(0,0,0,0.04)] px-5 py-3 md:px-6 md:py-4 rounded-2xl cursor-pointer hover:-translate-y-1 hover:bg-white/50 transition-all flex items-center gap-2 md:gap-3 reveal ${category.staggerClass} whitespace-nowrap`}
     >
       <div className="w-2 h-2 rounded-full bg-slate-800" />
       <span className="text-sm md:text-base font-semibold text-slate-700">
@@ -280,63 +274,12 @@ function CategoryChip({ category }: { category: Category }) {
 }
 
 
-const BEST_SELLERS: Book[] = [
-  {
-    id: "arsitektur-minimalis",
-    title: "Arsitektur Minimalis",
-    author: "Elena Rostova",
-    category: "Desain",
-    price: "Rp 185.000",
-    rating: 4.8,
-    imageUrl:
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=400&h=600",
-    imageAlt: "Arsitektur Minimalis",
-    staggerClass: "stagger-1",
-  },
-  {
-    id: "seni-berpikir-jernih",
-    title: "Seni Berpikir Jernih",
-    author: "Rolf Dobelli",
-    category: "Filosofi",
-    price: "Rp 120.000",
-    rating: 4.9,
-    imageUrl:
-      "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=400&h=600",
-    imageAlt: "Seni Berpikir Jernih",
-    staggerClass: "stagger-2",
-  },
-  {
-    id: "filosofi-teras",
-    title: "Filosofi Teras",
-    author: "Henry Manampiring",
-    category: "Gaya Hidup",
-    price: "Rp 98.000",
-    rating: 4.7,
-    imageUrl:
-      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=400&h=600",
-    imageAlt: "Filosofi Teras",
-    staggerClass: "stagger-3",
-  },
-  {
-    id: "ruang-cahaya",
-    title: "Ruang & Cahaya",
-    author: "Tadao Ando",
-    category: "Arsitektur",
-    price: "Rp 210.000",
-    rating: 5.0,
-    imageUrl:
-      "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=400&h=600",
-    imageAlt: "Ruang & Cahaya",
-    staggerClass: "stagger-4",
-  },
-];
-
 function BestSellersSection() {
   return (
     <section id="koleksi" className="container mx-auto px-6 lg:px-12 mt-24 md:mt-32">
       <SectionHeader />
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-        {BEST_SELLERS.map((book) => (
+        {FEATURED_BOOKS.map((book) => (
           <BookCard key={book.id} book={book} />
         ))}
       </div>
@@ -366,7 +309,7 @@ function SectionHeader() {
 function BookCard({ book }: { book: Book }) {
   return (
     <div className={`group cursor-pointer reveal ${book.staggerClass}`}>
-      <div className="relative aspect-[4/5] sm:aspect-[3/4] w-full rounded-3xl overflow-hidden bg-white/25 backdrop-blur-[12px] border border-white/40 shadow-[0_4px_24px_0_rgba(0,0,0,0.04)] p-2 md:p-3 mb-4 transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-2">
+      <div className="relative aspect-4/5 sm:aspect-3/4 w-full rounded-3xl overflow-hidden bg-white/25 backdrop-blur-md border border-white/40 shadow-[0_4px_24px_0_rgba(0,0,0,0.04)] p-2 md:p-3 mb-4 transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-2">
         <img
           src={book.imageUrl}
           alt={book.imageAlt}
@@ -414,7 +357,7 @@ function NewsletterSection() {
 
   return (
     <section className="container mx-auto px-6 lg:px-12 mt-24 md:mt-40 reveal">
-      <div className="bg-white/40 backdrop-blur-[16px] border border-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[2rem] p-8 md:p-16 text-center relative overflow-hidden">
+      <div className="bg-white/40 backdrop-blur-lg border border-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-4xl p-8 md:p-16 text-center relative overflow-hidden">
         {/* Decorative blobs inside card */}
         <div className="absolute -top-10 -right-10 md:-top-20 md:-right-20 w-48 h-48 md:w-64 md:h-64 bg-slate-200 rounded-full mix-blend-multiply filter blur-[60px] md:blur-[80px] opacity-60" />
         <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-stone-200 rounded-full mix-blend-multiply filter blur-[60px] opacity-50" />

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { Star, ArrowUpRight, Heart } from "lucide-react";

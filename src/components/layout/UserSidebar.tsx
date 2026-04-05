@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import Link from "next/link";
@@ -11,7 +12,8 @@ import {
   LogOut, 
   Library,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  X
 } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 import { Button } from "@/src/components/ui/Button";
@@ -67,6 +69,96 @@ export default function UserSidebar({ isCollapsed, onToggle, isMobile }: UserSid
     { href: "#library", icon: Library, label: "Perpustakaan" },
   ];
 
+  if (isMobile) {
+    return (
+      <>
+        {/* Backdrop */}
+        <div 
+          className={cn(
+            "fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-50 lg:hidden transition-opacity duration-300",
+            !isCollapsed ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
+          )}
+          onClick={onToggle}
+        />
+        
+        {/* Drawer */}
+        <aside 
+          className={cn(
+            "fixed left-0 top-0 h-screen w-72 bg-white/90 backdrop-blur-xl border-r border-white/40 p-6 flex flex-col z-60 transition-transform duration-500 ease-in-out lg:hidden shadow-2xl",
+            !isCollapsed ? "translate-x-0" : "-translate-x-full"
+          )}
+        >
+          {/* Header with Close Button */}
+          <div className="flex items-center justify-between mb-10 px-2 mt-1">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center shadow-lg shadow-slate-200 shrink-0">
+                <BookOpen className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-800 leading-none">Book&apos;S</h2>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Premium Store</span>
+              </div>
+            </div>
+            
+            <button 
+              onClick={onToggle}
+              className="w-8 h-8 -mr-2 rounded-lg hover:bg-slate-200/50 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-all"
+              aria-label="Close Menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 space-y-2 overflow-y-auto no-scrollbar">
+            <p className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Menu Utama</p>
+            {navItems.map((item) => (
+              <NavItem 
+                key={item.label} 
+                href={item.href} 
+                icon={item.icon} 
+                label={item.label} 
+                active={pathname === item.href}
+                collapsed={false}
+              />
+            ))}
+          </nav>
+
+          {/* Footer / Account */}
+          <div className="mt-auto space-y-4 pt-6 border-t border-slate-200/50">
+            <NavItem 
+              href="#settings" 
+              icon={Settings} 
+              label="Pengaturan" 
+              active={pathname === "/settings"} 
+              collapsed={false}
+            />
+            
+            <div className="p-4 rounded-2xl bg-slate-800/5 border border-slate-200/50 flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden shrink-0">
+                   <img src="https://i.pravatar.cc/100?img=12" alt="User" className="w-full h-full object-cover" />
+                </div>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-sm font-bold text-slate-800 truncate">{user?.fullName || "Regular User"}</p>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider truncate">Premium</p>
+                </div>
+              </div>
+              
+              <Button 
+                onClick={() => { onToggle?.(); handleLogout(); }}
+                className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-center transition-colors shadow-md flex justify-center items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Keluar
+              </Button>
+            </div>
+          </div>
+        </aside>
+      </>
+    );
+  }
+
   return (
     <aside 
       className={cn(
@@ -83,7 +175,7 @@ export default function UserSidebar({ isCollapsed, onToggle, isMobile }: UserSid
           </div>
           {!isCollapsed && (
             <div>
-              <h2 className="text-xl font-bold text-slate-800 leading-none">Book'S</h2>
+              <h2 className="text-xl font-bold text-slate-800 leading-none">Book&apos;S</h2>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Premium Store</span>
             </div>
           )}
@@ -130,11 +222,13 @@ export default function UserSidebar({ isCollapsed, onToggle, isMobile }: UserSid
         />
         
         <div className={cn(
-          "p-4 rounded-2xl bg-slate-800/10 border border-white/20 backdrop-blur-md transition-all duration-300",
-          isCollapsed ? "p-2 items-center flex flex-col gap-4" : ""
+          "rounded-2xl transition-all duration-300",
+          isCollapsed 
+            ? "flex flex-col items-center gap-4 bg-transparent border-transparent backdrop-blur-none p-0" 
+            : "p-4 bg-slate-800/10 border border-white/20 backdrop-blur-md"
         )}>
-          <div className={cn("flex items-center gap-3", isCollapsed ? "flex-col" : "mb-3")}>
-            <div className="w-10 h-10 rounded-full border-2 border-slate-200 shadow-sm overflow-hidden shrink-0">
+          <div className={cn("flex items-center", isCollapsed ? "justify-center" : "gap-3 mb-3")}>
+            <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden shrink-0">
                <img src="https://i.pravatar.cc/100?img=12" alt="User" className="w-full h-full object-cover" />
             </div>
             {!isCollapsed && (
@@ -148,14 +242,14 @@ export default function UserSidebar({ isCollapsed, onToggle, isMobile }: UserSid
           <Button 
             onClick={handleLogout}
             className={cn(
-              "w-full text-xs font-bold gap-2 h-10 transition-all duration-300 border shadow-sm",
+              "text-xs font-bold transition-all duration-300 border shadow-sm flex items-center justify-center bg-slate-100/80 text-slate-600 border-slate-200 hover:bg-slate-800 hover:text-white hover:border-slate-800",
               isCollapsed 
-                ? "w-10 h-10 p-0 rounded-xl justify-center bg-white text-slate-600 border-slate-100 hover:bg-slate-50 hover:text-slate-900" 
-                : "py-2 px-4 bg-slate-100/80 text-slate-600 border-slate-200 hover:bg-slate-800 hover:text-white hover:border-slate-800"
+                ? "w-10 h-10 p-0 rounded-xl mx-auto shrink-0" 
+                : "w-full h-10 py-2 px-4 rounded-xl gap-2"
             )}
             title={isCollapsed ? "Keluar" : undefined}
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-4 h-4 shrink-0" />
             {!isCollapsed && "Keluar"}
           </Button>
         </div>

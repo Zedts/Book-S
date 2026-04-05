@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState } from "react";
@@ -86,10 +87,10 @@ export default function UserHome() {
              {/* Decorative images or elements */}
              <div className="absolute inset-0 flex items-center justify-center p-6">
                 <div className="relative w-32 h-44 bg-white rounded-xl shadow-2xl transform -rotate-12 translate-x-4 group-hover/banner:-rotate-6 transition-transform duration-500">
-                   <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format" className="w-full h-full object-cover rounded-xl" />
+                   <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format" alt="Book Cover 1" className="w-full h-full object-cover rounded-xl" />
                 </div>
                 <div className="relative w-32 h-44 bg-white rounded-xl shadow-2xl transform rotate-12 -translate-x-4 z-10 group-hover/banner:rotate-6 transition-transform duration-500">
-                   <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format" className="w-full h-full object-cover rounded-xl" />
+                   <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format" alt="Book Cover 2" className="w-full h-full object-cover rounded-xl" />
                 </div>
              </div>
           </div>
@@ -108,7 +109,7 @@ export default function UserHome() {
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
-        <div className="flex overflow-x-auto pb-4 gap-4 no-scrollbar -mx-2 px-2">
+        <div className="flex overflow-x-auto pb-4 pt-2 -mx-6 px-6 lg:mx-0 lg:px-0 gap-3 md:gap-4 no-scrollbar">
           {USER_CATEGORIES.map((category) => (
              <div
               key={category.id}

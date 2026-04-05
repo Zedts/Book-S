@@ -104,7 +104,7 @@ export default function Navbar() {
     <>
       <nav className={`fixed w-full z-50 transition-all duration-300 ${paddingClass}`}>
         <div className="container mx-auto px-5 lg:px-12 relative z-50">
-          <div className="bg-white/40 backdrop-blur-[16px] border border-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-full px-5 py-3 md:px-6 flex items-center justify-between on-load-reveal relative z-50">
+          <div className="bg-white/40 backdrop-blur-lg border border-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-full px-5 py-3 md:px-6 flex items-center justify-between on-load-reveal relative z-50">
             {/* Logo */}
             <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 cursor-pointer group">
               <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-slate-700 group-hover:text-slate-900 transition-colors" />
@@ -134,16 +134,16 @@ export default function Navbar() {
             {/* Desktop & Mobile action buttons */}
             <div className="flex items-center gap-1.5 md:gap-4 text-slate-600">
               <button className="p-1.5 md:p-2 hover:bg-white/50 rounded-full transition-colors" aria-label="Search">
-                <Search className="w-[18px] h-[18px] md:w-5 md:h-5" />
+                <Search className="w-4.5 h-4.5 md:w-5 md:h-5" />
               </button>
               <button className="p-1.5 md:p-2 hover:bg-white/50 rounded-full transition-colors relative" aria-label="Cart">
-                <ShoppingBag className="w-[18px] h-[18px] md:w-5 md:h-5" />
+                <ShoppingBag className="w-4.5 h-4.5 md:w-5 md:h-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-slate-800 rounded-full border border-white" />
               </button>
               
               <Link
                 href={userRole === "admin" ? "/admin/home" : (userRole === "users" ? "/user/home" : "/auth")}
-                className="hidden md:flex items-center justify-center px-5 py-2.5 rounded-full bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm transition-colors shadow-sm ml-2 w-[100px]"
+                className="hidden md:flex items-center justify-center px-5 py-2.5 rounded-full bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm transition-colors shadow-sm ml-2 w-25"
               >
                 {isCheckingSession ? (
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
