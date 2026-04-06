@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { loginAction, registerAction } from "@/src/lib/actions/auth";
+import { toggleFavoriteAction } from "@/src/lib/actions/favorite";
 
 export const useAuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -41,18 +42,27 @@ export const useAuthForm = () => {
         res = await registerAction(formData);
       }
 
-      if (res.error) {
+      if (res?.error) {
         setError(res.error);
         setLoading(false);
         return;
       }
 
-      if (res.success && res.role) {
-        // Routing logic based on role
-        if (res.role === 'admin') {
-          window.location.href = '/admin/home';
-        } else {
+      if (res?.success && res.role) {
+        // Sync pending favorite from localStorage if it exists
+        if (res.role === 'users') {
+          try {
+            const pendingFavorite = localStorage.getItem("pending_favorite");
+            if (pendingFavorite) {
+              await toggleFavoriteAction(pendingFavorite);
+              localStorage.removeItem("pending_favorite");
+            }
+          } catch (favErr) {
+            console.error("Failed to sync pending favorite:", favErr);
+          }
           window.location.href = '/user/home';
+        } else if (res.role === 'admin') {
+          window.location.href = '/admin/home';
         }
       }
     } catch {

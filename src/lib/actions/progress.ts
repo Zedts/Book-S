@@ -1,8 +1,8 @@
 "use server";
 
 import { prisma } from "@/src/lib/prisma";
-import { cookies } from "next/headers";
 import { getSession } from "@/src/lib/auth";
+import { revalidatePath } from "next/cache";
 
 export async function getUserProgress() {
   try {
@@ -56,29 +56,111 @@ export async function updateUserProgress(bookId: string, status: "reading" | "co
     });
 
     return { 
-      success: true, 
-      message: `Progress buku "${updated.book.title}" berhasil diupdate`, 
       data: updated 
     };
   } catch (error) {
     console.error("updateUserProgress Error:", error);
     return { success: false, message: "Gagal mengupdate progress buku" };
+  } finally {
+    revalidatePath("/");
   }
 }
 
-// Untuk sementara hanya fungsi dummy visual jika UI rating ingin dinyalakan.
 export async function submitRating(bookId: string, rating: number) {
   try {
     const session = await getSession();
     if (!session?.id) return { success: false, message: "Unauthorized" };
-    
+
     if (rating < 1 || rating > 5) {
-        return { success: false, message: "Rating tidak valid" };
+      return { success: false, message: "Rating tidak valid" };
     }
 
-    return { success: true, message: "Terima kasih atas penilaian Anda!" };
+    // Pastikan user memiliki buku tersebut di progress
+    const hasBook = await prisma.userBookProgress.findUnique({
+      where: {
+        userId_bookId: {
+          userId: session.id,
+          bookId,
+        },
+      },
+    });
+
+    if (!hasBook) {
+      return { success: false, message: "Anda tidak memiliki akses untuk memberikan rating pada buku ini" };
+    }
+
+    // Jalankan transaksi: upsert Rating lalu update Book average
+    await prisma.$transaction(async (tx) => {
+      const existingRating = await tx.rating.findUnique({
+        where: {
+          userId_bookId: {
+            userId: session.id,
+            bookId,
+          },
+        },
+      });
+
+      if (existingRating && existingRating.score === rating) {
+        // Skrip berhenti di sini jika skor sama, tidak perlu update rata-rata
+        return;
+      }
+
+      await tx.rating.upsert({
+        where: {
+          userId_bookId: {
+            userId: session.id,
+            bookId,
+          },
+        },
+        create: {
+          userId: session.id,
+          bookId,
+          score: rating,
+        },
+        update: {
+          score: rating,
+        },
+      });
+
+      const avgRating = await tx.rating.aggregate({
+        where: { bookId },
+        _avg: { score: true },
+      });
+
+      const newAvg = avgRating._avg.score || 0;
+
+      await tx.book.update({
+        where: { id: bookId },
+        data: { rating: Number(newAvg.toFixed(1)) },
+      });
+    });
+
+    return { success: true, message: "Penilaian Anda berhasil disimpan!" };
   } catch (error) {
-     console.error("submitRating Error:", error);
-     return { success: false, message: "Gagal mengirim penilaian" };
+    console.error("submitRating Error:", error);
+    return { success: false, message: "Gagal mengirim penilaian" };
+  } finally {
+    revalidatePath("/");
+  }
+}
+
+export async function getUserRating(bookId: string) {
+  try {
+    const session = await getSession();
+    if (!session?.id) return { success: true, rating: 0 };
+
+    const userRating = await prisma.rating.findUnique({
+      where: {
+        userId_bookId: {
+          userId: session.id,
+          bookId,
+        },
+      },
+    });
+
+    return { success: true, rating: userRating ? userRating.score : 0 };
+  } catch (error) {
+    console.error("getUserRating Error:", error);
+    return { success: false, rating: 0 };
   }
 }

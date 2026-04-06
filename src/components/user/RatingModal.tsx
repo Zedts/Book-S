@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Modal from "@/src/components/ui/Modal";
 import { Button } from "@/src/components/ui/Button";
-import { submitRating } from "@/src/lib/actions/progress";
+import { submitRating, getUserRating } from "@/src/lib/actions/progress";
 import Notification from "@/src/components/ui/Notification";
 import { Star } from "lucide-react";
 import { useNotification } from "@/src/hooks/useNotification";
@@ -24,6 +24,7 @@ export function RatingModal({
   const [rating, setRating] = useState<number>(0);
   const [hoveredRating, setHoveredRating] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { 
     isOpen: notifOpen, 
     message: notifMessage, 
@@ -31,6 +32,27 @@ export function RatingModal({
     showNotification, 
     onClose: hideNotif 
   } = useNotification();
+
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    let isMounted = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsLoading(true);
+    
+    getUserRating(bookId).then((res) => {
+      if (isMounted && res.success && res.rating) {
+        setRating(res.rating);
+      }
+      if (isMounted) setIsLoading(false);
+    });
+
+    return () => {
+      isMounted = false;
+      setRating(0);
+      setHoveredRating(0);
+    };
+  }, [isOpen, bookId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +85,12 @@ export function RatingModal({
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex justify-center gap-2 py-4">
+            <div className="flex justify-center gap-2 py-4 relative">
+              {isLoading ? (
+                 <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm z-10">
+                   <p className="text-sm font-medium text-slate-500 animate-pulse">Memuat nilai...</p>
+                 </div>
+              ) : null}
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
@@ -71,7 +98,8 @@ export function RatingModal({
                   onMouseEnter={() => setHoveredRating(star)}
                   onMouseLeave={() => setHoveredRating(0)}
                   onClick={() => setRating(star)}
-                  className="p-1 transition-transform hover:scale-110 focus:outline-none"
+                  disabled={isLoading}
+                  className="p-1 transition-transform hover:scale-110 focus:outline-none disabled:opacity-50"
                 >
                   <Star 
                     className={`w-10 h-10 ${
@@ -87,7 +115,7 @@ export function RatingModal({
 
             <div className="pt-4 border-t border-slate-100 flex gap-3">
               <Button type="button" variant="secondary" onClick={onClose} className="flex-1 rounded-xl">Batal</Button>
-              <Button type="submit" variant="primary" disabled={isSubmitting || rating === 0} className="flex-1 rounded-xl bg-amber-500 text-white hover:bg-amber-600 border-none">
+              <Button type="submit" variant="primary" disabled={isSubmitting || rating === 0 || isLoading} className="flex-1 rounded-xl bg-amber-500 text-white hover:bg-amber-600 border-none">
                 {isSubmitting ? "Menyimpan..." : "Kirim Rating"}
               </Button>
             </div>

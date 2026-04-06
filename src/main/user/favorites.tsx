@@ -4,7 +4,7 @@ import { Heart } from "lucide-react";
 import UserLayout from "@/src/components/layout/UserLayout";
 import BookCard from "@/src/components/user/BookCard";
 import { useRequireRole } from "@/src/hooks/useRequireRole";
-import { useFavorites } from "@/src/hooks/useFavorites";
+import { useFavoritesContext } from "@/src/components/layout/FavoritesProvider";
 import type { Book } from "@/src/types/landing";
 
 export default function UserFavorites({
@@ -13,11 +13,9 @@ export default function UserFavorites({
   initialBooks: Book[];
 }) {
   const { user } = useRequireRole("users");
-  const { favorites } = useFavorites();
+  const { favorites, isLoading } = useFavoritesContext();
 
   const favoriteBooks = initialBooks.filter(book => favorites.includes(book.id));
-
-  const displayBooks = favoriteBooks;
 
   if (!user) return null;
 
@@ -45,13 +43,17 @@ export default function UserFavorites({
               Disimpan oleh Anda
             </h2>
             <p className="text-sm font-medium px-3 py-1 bg-slate-100 text-slate-600 rounded-full">
-              {displayBooks.length} buku
+              {isLoading ? '...' : favoriteBooks.length} buku
             </p>
           </div>
 
-          {displayBooks.length > 0 ? (
+          {isLoading ? (
+            <div className="py-24 text-center">
+              <p className="text-slate-500">Memuat buku favorit Anda...</p>
+            </div>
+          ) : favoriteBooks.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 gap-y-10">
-              {displayBooks.map((book, index) => (
+              {favoriteBooks.map((book, index) => (
                 <div key={book.id} className="reveal relative" style={{ transitionDelay: `${(index % 8) * 100}ms` }}>
                   <BookCard book={book} />
                 </div>

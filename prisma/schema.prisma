@@ -8,17 +8,19 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  fullName  String
-  phone     String
-  role      String   @default("users") // 'admin' atau 'users'
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  cartItems CartItem[]
-  orders    Order[]
+  id         String             @id @default(uuid())
+  email      String             @unique
+  password   String
+  fullName   String
+  phone      String
+  role       String             @default("users") // 'admin' atau 'users'
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  cartItems  CartItem[]
+  orders     Order[]
   progresses UserBookProgress[]
+  favorites  Favorite[]
+  ratings    Rating[]
 }
 
 model Category {
@@ -31,23 +33,25 @@ model Category {
 }
 
 model Book {
-  id          String   @id @default(uuid())
+  id          String             @id @default(uuid())
   title       String
   author      String
-  description String   @db.Text
+  description String             @db.Text
   price       Int
-  stock       Int      @default(0)
-  rating      Float    @default(0.0)
+  stock       Int                @default(0)
+  rating      Float              @default(0.0)
   imageUrl    String
   imageAlt    String
-  isFeatured  Boolean  @default(false)
+  isFeatured  Boolean            @default(false)
   categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  category    Category           @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
   cartItems   CartItem[]
   orderItems  OrderItem[]
   progresses  UserBookProgress[]
+  favorites   Favorite[]
+  ratings     Rating[]
 
   @@unique([title, author])
 }
@@ -60,8 +64,8 @@ model CartItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@unique([userId, bookId])
 }
@@ -71,13 +75,13 @@ model Order {
   userId        String
   total         Int
   status        String   @default("pending") // 'pending', 'processing', 'completed', 'cancelled'
-  paymentMethod String   // 'Transfer Bank', 'E-wallet', 'COD'
+  paymentMethod String // 'Transfer Bank', 'E-wallet', 'COD'
   paymentStatus String   @default("unpaid") // 'unpaid', 'paid'
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orderItems    OrderItem[]
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
 }
 
 model OrderItem {
@@ -89,8 +93,8 @@ model OrderItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  book  Book  @relation(fields: [bookId], references: [id], onDelete: Cascade)
 }
 
 model UserBookProgress {
@@ -102,9 +106,34 @@ model UserBookProgress {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@unique([userId, bookId])
 }
 
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  bookId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+}
+
+model Rating {
+  id        String   @id @default(uuid())
+  userId    String
+  bookId    String
+  score     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+}

@@ -1,8 +1,8 @@
 "use server";
 
 import { prisma } from "@/src/lib/prisma";
-import { cookies } from "next/headers";
 import { getSession } from "@/src/lib/auth";
+import { revalidatePath } from "next/cache";
 
 export async function getCart() {
   try {
@@ -96,6 +96,8 @@ export async function addToCart(bookId: string, quantity: number = 1) {
   } catch (error) {
     console.error("addToCart Error:", error);
     return { success: false, message: "Gagal menambahkan buku ke keranjang" };
+  } finally {
+    revalidatePath("/");
   }
 }
 
@@ -133,6 +135,8 @@ export async function updateCartItemQuantity(cartItemId: string, newQuantity: nu
   } catch (error) {
     console.error("updateCartItem Error:", error);
     return { success: false, message: "Terjadi kesalahan saat mengupdate keranjang" };
+  } finally {
+    revalidatePath("/");
   }
 }
 
@@ -156,6 +160,8 @@ export async function removeFromCart(cartItemId: string) {
   } catch (error) {
     console.error("removeFromCart Error:", error);
     return { success: false, message: "Gagal menghapus item dari keranjang" };
+  } finally {
+    revalidatePath("/");
   }
 }
 
@@ -250,6 +256,8 @@ export async function processCheckout(itemIds: string[], paymentMethod: string) 
     console.error("processCheckout Error:", error);
     // Return explicit error message jika dari throw kita sendiri
     return { success: false, message: (error instanceof Error ? error.message : "Gagal memproses checkout") || "Gagal memproses checkout" };
+  } finally {
+    revalidatePath("/");
   }
 }
 

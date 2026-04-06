@@ -36,24 +36,26 @@ export default function BookCardHorizontal({
   return (
     <>
       <div className="group relative bg-white/40 backdrop-blur-md border border-white/60 rounded-3xl p-4 md:p-5 flex gap-4 md:gap-6 hover:bg-white/60 transition-all hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1 reveal overflow-hidden">
-        <div className="w-32 h-44 sm:w-28 sm:h-36 rounded-2xl overflow-hidden shadow-2xl shrink-0 group-hover:scale-105 transition-transform duration-500">
+        <div className="w-24 h-32 md:w-32 md:h-44 rounded-2xl overflow-hidden shadow-2xl shrink-0 group-hover:scale-105 transition-transform duration-500">
           <img
             src={book.imageUrl}
             alt={book.imageAlt}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-top"
           />
         </div>
 
-        <div className="flex-1 text-center sm:text-left min-w-0 w-full">
-          <div className="flex items-center justify-center sm:justify-start gap-2 mb-2 pr-12 sm:pr-0">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest truncate">
-              {book.category?.name || 'Uncategorized'}
-            </span>
-            <div className="hidden sm:flex shrink-0 items-center gap-1 text-amber-500 font-bold text-xs bg-amber-50 px-2 py-0.5 rounded-full ml-auto">
-              <Sparkles className="w-3 h-3" /> New
+        <div className="flex-1 text-left min-w-0 w-full flex flex-col">
+          <div className="flex items-start sm:items-center justify-between gap-2 mb-2 w-full">
+            <div className="flex items-center gap-2 truncate pr-2">
+              <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest truncate">
+                {book.category?.name || 'Uncategorized'}
+              </span>
+              <div className="hidden sm:flex shrink-0 items-center gap-1 text-amber-500 font-bold text-[10px] bg-amber-50 px-2 py-0.5 rounded-full">
+                <Sparkles className="w-3 h-3" /> New
+              </div>
             </div>
             {statusBadge && (
-              <div className="absolute top-4 right-4 sm:static sm:ml-auto">
+              <div className="shrink-0 flex-none">
                 {statusBadge}
               </div>
             )}
@@ -82,13 +84,13 @@ export default function BookCardHorizontal({
             </div>
           )}
 
-          <div className="flex flex-col xl:flex-row items-center xl:justify-between gap-3 xl:gap-4 mt-auto">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mt-auto pt-2 w-full">
             {!hidePrice && (
               <p className="text-lg xl:text-xl font-black text-slate-900 leading-none">
                 {formatCurrency(book.price)}
               </p>
             )}
-            <div className="flex items-center gap-2 w-full xl:w-auto ml-auto">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:justify-end">
               {showRating && (
                 <button
                   onClick={(e) => {
@@ -96,7 +98,7 @@ export default function BookCardHorizontal({
                     if (onRatingClick) onRatingClick(e);
                   }}
                   aria-label="Beri rating"
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white text-amber-500 border border-slate-200 flex items-center justify-center shadow-md hover:shadow-lg transition-transform hover:scale-105 shrink-0"
+                  className="w-10 h-10 rounded-xl bg-white text-amber-500 border border-slate-200 flex items-center justify-center shadow-md hover:shadow-lg transition-transform hover:scale-105 shrink-0"
                 >
                   <Star className="w-5 h-5" strokeWidth={2.5} />
                 </button>
@@ -107,7 +109,7 @@ export default function BookCardHorizontal({
                   toggleFavorite(book.id);
                 }}
                 aria-label="Toggle favorite"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white text-rose-500 border border-slate-200 flex items-center justify-center shadow-md hover:shadow-lg transition-transform hover:scale-105 shrink-0"
+                className="w-10 h-10 rounded-xl bg-white text-rose-500 border border-slate-200 flex items-center justify-center shadow-md hover:shadow-lg transition-transform hover:scale-105 shrink-0"
               >
                 <Heart className={`w-5 h-5 ${favorited ? "fill-rose-500" : ""}`} strokeWidth={favorited ? 0 : 2} />
               </button>
@@ -121,7 +123,7 @@ export default function BookCardHorizontal({
                     setIsDetailOpen(true);
                   }
                 }}
-                className="flex-1 xl:w-auto h-9 sm:h-10 px-4 sm:px-6 rounded-xl text-xs bg-slate-800 text-white shadow-md hover:shadow-lg shrink-0"
+                className="flex-1 sm:flex-none sm:w-auto h-10 px-3 sm:px-6 rounded-xl text-xs sm:text-sm bg-slate-800 text-white shadow-md hover:shadow-lg min-w-[100px] truncate"
               >
                 {actionLabel || "Detail Buku"}
               </Button>

@@ -11,6 +11,9 @@ import UserSettings from '@/src/main/user/settings';
 import { getCategories } from '@/src/lib/actions/category';
 import { getBooks } from '@/src/lib/actions/book';
 
+import { FavoritesProvider } from '@/src/components/layout/FavoritesProvider';
+import { getSession } from '@/src/lib/auth';
+
 type SearchParams = {
   view?: string;
 };
@@ -38,11 +41,22 @@ export default async function Page({ searchParams }: PageProps) {
     'user-settings': <UserSettings />,
   };
 
+  const session = await getSession();
+  const isAuthenticated = !!session;
+
   if (view && viewMap[view]) {
-    return viewMap[view];
+    return (
+      <FavoritesProvider isAuthenticated={isAuthenticated}>
+        {viewMap[view]}
+      </FavoritesProvider>
+    );
   }
 
-  return <Landing initialCategories={categories} initialBooks={books} />;
+  return (
+    <FavoritesProvider isAuthenticated={isAuthenticated}>
+      <Landing initialCategories={categories} initialBooks={books} />
+    </FavoritesProvider>
+  );
 }
 export const dynamic = 'force-dynamic';
 

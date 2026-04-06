@@ -37,32 +37,35 @@ export function CartItemCard({
   isUpdating
 }: CartItemCardProps) {
   return (
-    <div className="group relative bg-white/40 backdrop-blur-md border border-white/60 rounded-3xl p-4 md:p-5 flex gap-4 md:gap-6 hover:bg-white/60 transition-all hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1">
-      {/* Checkbox */}
-      {onToggleSelect && (
-        <div className="flex items-center justify-center shrink-0">
-          <input 
-            type="checkbox"
-            checked={isSelected}
-            onChange={() => onToggleSelect(id)}
-            className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shadow-sm"
+    <div className="group relative bg-white/40 backdrop-blur-md border border-white/60 rounded-3xl p-4 md:p-5 flex gap-3 md:gap-6 hover:bg-white/60 transition-all hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1">
+      {/* Checkbox and Image Container */}
+      <div className="flex shrink-0 gap-3">
+        {/* Checkbox */}
+        {onToggleSelect && (
+          <div className="flex items-center justify-center shrink-0">
+            <input 
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => onToggleSelect(id)}
+              className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shadow-sm"
+            />
+          </div>
+        )}
+
+        {/* Image */}
+        <div className="w-20 h-28 sm:w-28 sm:h-36 lg:w-32 lg:h-44 rounded-2xl overflow-hidden shadow-md shrink-0 group-hover:scale-105 transition-transform duration-500">
+          <img
+            src={imageUrl}
+            alt={imageAlt}
+            className="w-full h-full object-cover object-top"
           />
         </div>
-      )}
-
-      {/* Image */}
-      <div className="w-24 h-32 sm:w-28 sm:h-36 rounded-2xl overflow-hidden shadow-md shrink-0 group-hover:scale-105 transition-transform duration-500">
-        <img
-          src={imageUrl}
-          alt={imageAlt}
-          className="w-full h-full object-cover"
-        />
       </div>
 
       {/* Content */}
       <div className="flex flex-col min-w-0 w-full">
-        <div className="flex items-center justify-between gap-2 mb-1">
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest truncate">
+        <div className="flex items-start sm:items-center justify-between gap-2 mb-1">
+          <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest truncate pr-2">
             {bookCategory || 'Uncategorized'}
           </span>
           <button 
@@ -82,14 +85,20 @@ export function CartItemCard({
           {bookAuthor}
         </p>
 
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-auto gap-3">
-          <p className="text-lg xl:text-xl font-black text-slate-900 leading-none">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-auto gap-3 pt-2">
+          <p className="text-base sm:text-lg lg:text-xl font-black text-slate-900 leading-none">
             {formatCurrency(price)}
           </p>
 
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3">
+            {/* Max Stock Warning */}
+            {(quantity >= stock) && (
+              <span className="text-[10px] sm:text-xs font-bold text-amber-500 max-w-[80px] leading-tight text-right tracking-tight mr-1">
+                Max stok
+              </span>
+            )}
             {/* Quantity Controller */}
-            <div className="flex items-center bg-slate-100/50 rounded-xl p-1 border border-slate-200">
+            <div className="flex items-center bg-slate-100/50 rounded-xl p-1 border border-slate-200 shrink-0 shadow-sm">
               <button 
                 onClick={() => onUpdateQuantity(id, quantity - 1)}
                 disabled={quantity <= 1 || isUpdating}
@@ -110,12 +119,6 @@ export function CartItemCard({
                 <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
             </div>
-            
-            {(quantity >= stock) && (
-              <span className="text-[10px] sm:text-xs font-bold text-amber-500 max-w-[80px] leading-tight">
-                Max stok tercapai
-              </span>
-            )}
           </div>
         </div>
       </div>
