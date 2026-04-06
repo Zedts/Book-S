@@ -10,6 +10,7 @@ export function useFavorites() {
     const stored = localStorage.getItem(FAVORITES_KEY);
     if (stored) {
       try {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFavorites(JSON.parse(stored));
       } catch (e) {
         console.error("Failed to parse favorites", e);

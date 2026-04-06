@@ -1,10 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { Fragment } from "react";
-import { GraduationCap, Layout, Code2, Smartphone, BookOpen } from "lucide-react";
+import { Fragment, useState } from "react";
+import { GraduationCap, Layout, Code2, Smartphone, BookOpen, Mail } from "lucide-react";
 import GuestLayout from "@/src/components/layout/GuestLayout";
 import { GlassCard } from "@/src/components/ui/GlassCard";
+import Modal from "@/src/components/ui/Modal";
+import Notification from "@/src/components/ui/Notification";
+import { Button } from "@/src/components/ui/Button";
+import { Input } from "@/src/components/ui/Input";
 
 const FOCUS_CARDS = [
   {
@@ -50,6 +54,15 @@ export default function AboutUs() {
 }
 
 function AboutHeroSection() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsModalOpen(false);
+    setShowToast(true);
+  };
+
   return (
     <section className="container mx-auto px-6 lg:px-12 flex flex-col lg:flex-row items-center justify-between gap-12 md:gap-16 mb-24 md:mb-32">
       {/* Hero text */}
@@ -87,6 +100,14 @@ function AboutHeroSection() {
           seperti gaya visual Glassmorphism, tata letak yang sepenuhnya responsif,
           serta animasi interaktif menggunakan Next.js, TailwindCSS v4, dan TypeScript.
         </p>
+
+        <Button 
+          variant="primary" 
+          onClick={() => setIsModalOpen(true)} 
+          className="mb-8 lg:mb-0 w-full sm:w-auto px-8 h-14 rounded-2xl shadow-md hover:shadow-lg transition-transform hover:-translate-y-1 bg-slate-800 text-white"
+        >
+          <Mail className="w-5 h-5 mr-2" /> Hubungi Admin
+        </Button>
       </div>
 
       {/* Hero visual */}
@@ -126,6 +147,32 @@ function AboutHeroSection() {
           </div>
         </div>
       </div>
+
+      {/* Contact Admin Modal */}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Hubungi Admin" size="md">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-2">
+          <Input label="Nama Lengkap" placeholder="Masukkan nama Anda" required />
+          <Input label="Alamat Email" type="email" placeholder="nama@email.com" required />
+          <Input label="Nomor Telepon" type="tel" placeholder="08xxxxxxxxxx" required />
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-bold text-slate-700 ml-1">Pesan</label>
+            <textarea 
+              className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 bg-slate-50/50 outline-none transition-all resize-none h-32 text-sm md:text-base text-slate-800 placeholder-slate-400" 
+              placeholder="Tuliskan pesan Anda di sini..." 
+              required
+            />
+          </div>
+          <Button type="submit" variant="primary" className="h-14 mt-2 rounded-2xl shadow-md hover:shadow-lg transition-transform hover:-translate-y-1 w-full bg-slate-800 text-white">
+            Kirim Pesan
+          </Button>
+        </form>
+      </Modal>
+
+      <Notification 
+        isOpen={showToast} 
+        message="Pesan Anda berhasil terkirim ke Admin!" 
+        onClose={() => setShowToast(false)} 
+      />
     </section>
   );
 }
