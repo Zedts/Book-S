@@ -16,6 +16,7 @@ export function proxy(request: NextRequest) {
       '/user/my-books': 'user-my-books',
       '/user/favorites': 'user-favorites',
       '/user/library': 'user-library',
+      '/user/settings': 'user-settings',
     };
 
     if (routeMap[pathname]) {

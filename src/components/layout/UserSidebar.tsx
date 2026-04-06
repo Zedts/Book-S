@@ -194,10 +194,10 @@ export default function UserSidebar({ isCollapsed, onToggle, isMobile }: UserSid
           {/* Footer / Account */}
           <div className="mt-auto space-y-4 pt-6 border-t border-slate-200/50">
             <NavItem 
-              href="#settings" 
+              href="/user/settings" 
               icon={Settings} 
               label="Pengaturan" 
-              active={pathname === "/settings"} 
+              active={pathname === "/user/settings"} 
               collapsed={false}
             />
             <UserAccount user={user} onLogout={() => { onToggle?.(); handleLogout(); }} />
@@ -237,10 +237,10 @@ export default function UserSidebar({ isCollapsed, onToggle, isMobile }: UserSid
       {/* Footer / Account */}
       <div className="mt-auto space-y-4 pt-6 border-t border-white/40">
         <NavItem 
-          href="#settings" 
+          href="/user/settings" 
           icon={Settings} 
           label="Pengaturan" 
-          active={pathname === "/settings"} 
+          active={pathname === "/user/settings"} 
           collapsed={isCollapsed}
         />
         <UserAccount user={user} isCollapsed={isCollapsed} onLogout={handleLogout} />

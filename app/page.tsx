@@ -7,6 +7,7 @@ import UserExplore from '@/src/main/user/explore';
 import UserMyBooks from '@/src/main/user/my-books';
 import UserFavorites from '@/src/main/user/favorites';
 import UserLibrary from '@/src/main/user/library';
+import UserSettings from '@/src/main/user/settings';
 import { getCategories } from '@/src/lib/actions/category';
 import { getBooks } from '@/src/lib/actions/book';
 
@@ -35,6 +36,7 @@ export default async function Page({ searchParams }: PageProps) {
     'user-my-books': <UserMyBooks initialBooks={books} />,
     'user-favorites': <UserFavorites initialBooks={books} />,
     'user-library': <UserLibrary initialCategories={categories} initialBooks={books} />,
+    'user-settings': <UserSettings />,
   };
 
   if (view && viewMap[view]) {
