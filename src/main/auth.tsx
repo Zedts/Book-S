@@ -6,8 +6,11 @@ import { Input } from "@/src/components/ui/Input";
 import { Button } from "@/src/components/ui/Button";
 import { GlassCard } from "@/src/components/ui/GlassCard";
 import { useAuthForm } from "@/src/hooks/useAuthForm";
+import ReCAPTCHA from "react-google-recaptcha";
+import { useRef } from "react";
 
 export default function Auth() {
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const {
     isLogin,
     showPassword,
@@ -20,11 +23,19 @@ export default function Auth() {
     setFullName,
     phone,
     setPhone,
+    captchaToken,
+    setCaptchaToken,
     error,
     loading,
     handleSubmit,
     toggleMode
   } = useAuthForm();
+
+  // Reset recaptcha when mode changes
+  const handleToggleMode = () => {
+    toggleMode();
+    recaptchaRef.current?.reset();
+  };
 
   return (
     <GuestLayout>
@@ -107,9 +118,18 @@ export default function Auth() {
                 }
               />
 
+              <div className="flex justify-center my-2">
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey="6LcCMKksAAAAAGJKAa_EA0mshnQcD9jjX5Nu-xz2"
+                  onChange={(token) => setCaptchaToken(token)}
+                  theme="light"
+                />
+              </div>
+
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !captchaToken}
                 className="mt-3"
                 fullWidth
               >
@@ -125,7 +145,7 @@ export default function Auth() {
               <div className="text-center mt-2">
                 <button
                   type="button"
-                  onClick={toggleMode}
+                  onClick={handleToggleMode}
                   className="text-slate-600 font-medium hover:text-slate-900 transition-colors text-sm cursor-pointer"
                 >
                   {isLogin

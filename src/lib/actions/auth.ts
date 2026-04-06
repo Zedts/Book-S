@@ -4,10 +4,38 @@ import { prisma } from '@/src/lib/prisma';
 import { signToken, clearSession, getSession, setSession } from '@/src/lib/auth';
 import bcrypt from 'bcryptjs';
 
+const CAPTCHA_SECRET = "6LcCMKksAAAAAKwzYV-1tA1EMbmODxnx83-ipO-B";
+
+async function verifyCaptcha(token: string | null): Promise<boolean> {
+  if (!token) return false;
+  try {
+    const res = await fetch(`https://www.google.com/recaptcha/api/siteverify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `secret=${CAPTCHA_SECRET}&response=${token}`,
+    });
+    const data = await res.json();
+    return data.success;
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error(err);
+    }
+    return false;
+  }
+}
+
 export async function loginAction(formData: FormData) {
   try {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
+    const captchaToken = formData.get('captchaToken') as string;
+
+    const isCaptchaValid = await verifyCaptcha(captchaToken);
+    if (!isCaptchaValid) {
+      return { error: 'Verifikasi captcha gagal. Silakan coba lagi.' };
+    }
 
     if (!email || !password) {
       return { error: 'Email dan password wajib diisi.' };
@@ -45,6 +73,12 @@ export async function registerAction(formData: FormData) {
     const password = formData.get('password') as string;
     const fullName = formData.get('fullName') as string;
     const phone = formData.get('phone') as string;
+    const captchaToken = formData.get('captchaToken') as string;
+
+    const isCaptchaValid = await verifyCaptcha(captchaToken);
+    if (!isCaptchaValid) {
+      return { error: 'Verifikasi captcha gagal. Silakan coba lagi.' };
+    }
 
     if (!email || !password || !fullName || !phone) {
       return { error: 'Semua field (Email, Password, Nama, Telepon) wajib diisi.' };

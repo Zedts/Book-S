@@ -8,6 +8,7 @@ import { GlassCard } from "@/src/components/ui/GlassCard";
 import UserLayout from "@/src/components/layout/UserLayout";
 import Notification from "@/src/components/ui/Notification";
 import { useRequireRole } from "@/src/hooks/useRequireRole";
+import { useNotification } from "@/src/hooks/useNotification";
 import { cn } from "@/src/lib/utils";
 
 const TABS = [
@@ -172,7 +173,13 @@ export default function UserSettings() {
   const { user, handleLogout } = useRequireRole("users");
   const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [isSaving, setIsSaving] = useState(false);
-  const [showNotification, setShowNotification] = useState(false);
+  const { 
+    isOpen: notificationOpen, 
+    message: notificationMessage, 
+    type: notificationType,
+    showNotification, 
+    onClose: hideNotification 
+  } = useNotification();
 
   // Form states 
   const [profileForm, setProfileForm] = useState({
@@ -202,7 +209,7 @@ export default function UserSettings() {
     // Simulate API call
     setTimeout(() => {
       setIsSaving(false);
-      setShowNotification(true);
+      showNotification("Pengaturan berhasil disimpan!", "success");
     }, 1000);
   };
 
@@ -436,9 +443,10 @@ export default function UserSettings() {
       </div>
 
       <Notification
-        isOpen={showNotification}
-        message="Pengaturan berhasil disimpan!"
-        onClose={() => setShowNotification(false)}
+        isOpen={notificationOpen}
+        message={notificationMessage}
+        type={notificationType}
+        onClose={hideNotification}
       />
     </UserLayout>
   );

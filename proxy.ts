@@ -15,7 +15,7 @@ export function proxy(request: NextRequest) {
       '/user/explore': 'user-explore',
       '/user/my-books': 'user-my-books',
       '/user/favorites': 'user-favorites',
-      '/user/library': 'user-library',
+      '/user/cart': 'user-cart',
       '/user/settings': 'user-settings',
     };
 

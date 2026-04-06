@@ -10,7 +10,7 @@ import {
   Heart, 
   Settings, 
   LogOut, 
-  Library,
+  ShoppingCart,
   ChevronRight,
   ChevronLeft,
   X
@@ -155,7 +155,7 @@ export default function UserSidebar({ isCollapsed, onToggle, isMobile }: UserSid
     { href: "/user/explore", icon: Compass, label: "Jelajahi" },
     { href: "/user/my-books", icon: BookOpen, label: "Progress" },
     { href: "/user/favorites", icon: Heart, label: "Favorit" },
-    { href: "/user/library", icon: Library, label: "Perpustakaan" },
+    { href: "/user/cart", icon: ShoppingCart, label: "Keranjang" },
   ];
 
   if (isMobile) {

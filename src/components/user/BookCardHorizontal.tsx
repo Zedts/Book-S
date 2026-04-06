@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Heart } from "lucide-react";
+import { Sparkles, Heart, Star } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
 import BookDetailModal from "@/src/components/user/BookDetailModal";
 import type { Book } from "@/src/types/landing";
@@ -12,11 +12,21 @@ import { useFavorites } from "@/src/hooks/useFavorites";
 export default function BookCardHorizontal({
   book,
   progress,
-  statusBadge
+  statusBadge,
+  hidePrice,
+  actionLabel,
+  onActionClick,
+  showRating,
+  onRatingClick
 }: {
   book: Book;
   progress?: number;
   statusBadge?: React.ReactNode;
+  hidePrice?: boolean;
+  actionLabel?: string;
+  onActionClick?: (e: React.MouseEvent) => void;
+  showRating?: boolean;
+  onRatingClick?: (e: React.MouseEvent) => void;
 }) {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const { toggleFavorite, isFavorite } = useFavorites();
@@ -73,26 +83,47 @@ export default function BookCardHorizontal({
           )}
 
           <div className="flex flex-col xl:flex-row items-center xl:justify-between gap-3 xl:gap-4 mt-auto">
-            <p className="text-lg xl:text-xl font-black text-slate-900 leading-none">
-              {formatCurrency(book.price)}
-            </p>
-            <div className="flex items-center gap-2 w-full xl:w-auto">
+            {!hidePrice && (
+              <p className="text-lg xl:text-xl font-black text-slate-900 leading-none">
+                {formatCurrency(book.price)}
+              </p>
+            )}
+            <div className="flex items-center gap-2 w-full xl:w-auto ml-auto">
+              {showRating && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onRatingClick) onRatingClick(e);
+                  }}
+                  aria-label="Beri rating"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white text-amber-500 border border-slate-200 flex items-center justify-center shadow-md hover:shadow-lg transition-transform hover:scale-105 shrink-0"
+                >
+                  <Star className="w-5 h-5" strokeWidth={2.5} />
+                </button>
+              )}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleFavorite(book.id);
                 }}
                 aria-label="Toggle favorite"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white text-rose-500 border border-white flex items-center justify-center shadow-md hover:shadow-lg transition-transform hover:scale-105 shrink-0"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white text-rose-500 border border-slate-200 flex items-center justify-center shadow-md hover:shadow-lg transition-transform hover:scale-105 shrink-0"
               >
                 <Heart className={`w-5 h-5 ${favorited ? "fill-rose-500" : ""}`} strokeWidth={favorited ? 0 : 2} />
               </button>
               <Button
                 variant="primary"
-                onClick={() => setIsDetailOpen(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onActionClick) {
+                    onActionClick(e);
+                  } else {
+                    setIsDetailOpen(true);
+                  }
+                }}
                 className="flex-1 xl:w-auto h-9 sm:h-10 px-4 sm:px-6 rounded-xl text-xs bg-slate-800 text-white shadow-md hover:shadow-lg shrink-0"
               >
-                Detail Buku
+                {actionLabel || "Detail Buku"}
               </Button>
             </div>
           </div>

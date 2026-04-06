@@ -9,6 +9,7 @@ import Modal from "@/src/components/ui/Modal";
 import Notification from "@/src/components/ui/Notification";
 import { Button } from "@/src/components/ui/Button";
 import { Input } from "@/src/components/ui/Input";
+import { useNotification } from "@/src/hooks/useNotification";
 
 const FOCUS_CARDS = [
   {
@@ -55,12 +56,18 @@ export default function AboutUs() {
 
 function AboutHeroSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+  const { 
+    isOpen: showToast, 
+    message: toastMessage, 
+    type: toastType,
+    showNotification, 
+    onClose: hideToast 
+  } = useNotification();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsModalOpen(false);
-    setShowToast(true);
+    showNotification("Pesan Anda berhasil terkirim ke Admin!", "success");
   };
 
   return (
@@ -170,8 +177,9 @@ function AboutHeroSection() {
 
       <Notification 
         isOpen={showToast} 
-        message="Pesan Anda berhasil terkirim ke Admin!" 
-        onClose={() => setShowToast(false)} 
+        message={toastMessage} 
+        type={toastType}
+        onClose={hideToast} 
       />
     </section>
   );

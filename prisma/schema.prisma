@@ -16,6 +16,9 @@ model User {
   role      String   @default("users") // 'admin' atau 'users'
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  cartItems CartItem[]
+  orders    Order[]
+  progresses UserBookProgress[]
 }
 
 model Category {
@@ -42,6 +45,66 @@ model Book {
   category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  progresses  UserBookProgress[]
 
   @@unique([title, author])
 }
+
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String
+  bookId    String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+}
+
+model Order {
+  id            String   @id @default(uuid())
+  userId        String
+  total         Int
+  status        String   @default("pending") // 'pending', 'processing', 'completed', 'cancelled'
+  paymentMethod String   // 'Transfer Bank', 'E-wallet', 'COD'
+  paymentStatus String   @default("unpaid") // 'unpaid', 'paid'
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderItems    OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  bookId    String
+  price     Int
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+}
+
+model UserBookProgress {
+  id        String   @id @default(uuid())
+  userId    String
+  bookId    String
+  status    String   @default("reading") // 'reading', 'completed'
+  progress  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+}
+

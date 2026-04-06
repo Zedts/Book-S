@@ -34,13 +34,15 @@ export function CategoriesSection({
         )}>
           Eksplorasi Kategori
         </h2>
-        <button 
-          onClick={handleAuthNavigation} 
-          className="hidden md:flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors group"
-        >
-          Lihat Semua{" "}
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-        </button>
+        {!isDashboard && (
+          <button 
+            onClick={handleAuthNavigation} 
+            className="hidden md:flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors group"
+          >
+            Lihat Semua{" "}
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </button>
+        )}
       </div>
 
       <div className={cn(
@@ -78,11 +80,10 @@ function CategoryChip({
   index?: number; 
   isActive?: boolean; 
   variant?: 'landing' | 'dashboard';
-  onClick?: () => void 
+  onClick?: () => void
 }) {
-  const isDashboard = variant === 'dashboard';
   const staggerClass = `stagger-${((index % 4) + 1)}`;
-  
+
   return (
     <div
       onClick={onClick}

@@ -10,6 +10,8 @@ import type { Book } from "@/src/types/landing";
 import { formatCurrency } from "@/src/lib/utils";
 import { useFavorites } from "@/src/hooks/useFavorites";
 import { useAuthNavigation } from "@/src/hooks/useAuthNavigation";
+import { addToCart } from "@/src/lib/actions/cart";
+import { useNotification } from "@/src/hooks/useNotification";
 
 export interface BookDetailModalProps {
   book: Book;
@@ -20,13 +22,38 @@ export interface BookDetailModalProps {
 export default function BookDetailModal({ book, isOpen, onClose }: BookDetailModalProps) {
   const { toggleFavorite, isFavorite } = useFavorites();
   const { userRole, handleAuthNavigation, isNavigating } = useAuthNavigation();
-  const [showToast, setShowToast] = useState(false);
+  const { 
+    isOpen: showToast, 
+    message: toastMessage, 
+    type: toastType, 
+    showNotification, 
+    onClose: hideToast 
+  } = useNotification();
+  const [isAdding, setIsAdding] = useState(false);
 
   const favorited = isFavorite(book.id);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (userRole) {
-      setShowToast(true);
+      if ((book.stock ?? 0) <= 0) {
+        showNotification(`Maaf, stock buku "${book.title}" habis.`, "error");
+        return;
+      }
+      
+      setIsAdding(true);
+      try {
+        const response = await addToCart(book.id, 1);
+        if (response.success) {
+          showNotification(response.message || `Buku "${book.title}" berhasil dimasukkan ke keranjang!`, "success");
+        } else {
+          showNotification(response.message || "Gagal menambahkan ke keranjang.", "error");
+        }
+      } catch (error) {
+        console.error(error);
+        showNotification("Terjadi kesalahan sistem.", "error");
+      } finally {
+        setIsAdding(false);
+      }
     } else {
       handleAuthNavigation();
     }
@@ -78,7 +105,7 @@ export default function BookDetailModal({ book, isOpen, onClose }: BookDetailMod
               </div>
 
               <div className="flex flex-col gap-1 mb-8 text-sm font-medium text-slate-500">
-                <p>Tersedia: <span className="text-slate-800 font-bold">{book.stock} stok</span></p>
+                <p>Tersedia: <span className="text-slate-800 font-bold">{book.stock ?? 0} stok</span></p>
                 <p className="flex items-center gap-2">
                   Harga: <span className="text-xl md:text-2xl font-black text-rose-500">{formatCurrency(book.price)}</span>
                 </p>
@@ -88,13 +115,17 @@ export default function BookDetailModal({ book, isOpen, onClose }: BookDetailMod
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <Button 
                 variant="primary" 
-                className="w-full sm:flex-1 h-14 rounded-2xl gap-3 shadow-md hover:shadow-lg transition-transform hover:-translate-y-1 bg-slate-800 text-white disabled:opacity-70"
+                className="w-full sm:flex-1 h-14 rounded-2xl gap-3 shadow-md hover:shadow-lg transition-transform hover:-translate-y-1 bg-slate-800 text-white disabled:opacity-70 disabled:hover:-translate-y-0"
                 onClick={handleAddToCart}
-                disabled={isNavigating}
+                disabled={isNavigating || isAdding || (book.stock ?? 0) <= 0}
               >
                 <ShoppingCart className="w-5 h-5 text-white" /> 
                 <span className="font-bold text-base">
-                  {isNavigating ? "Memproses..." : "Tambah ke Keranjang"}
+                  {isNavigating || isAdding 
+                    ? "Memproses..." 
+                    : (book.stock ?? 0) <= 0 
+                      ? "Stock Habis" 
+                      : "Tambah ke Keranjang"}
                 </span>
               </Button>
               <button
@@ -111,9 +142,11 @@ export default function BookDetailModal({ book, isOpen, onClose }: BookDetailMod
 
       <Notification 
         isOpen={showToast}
-        message={`Buku "${book.title}" berhasil dimasukkan ke keranjang!`}
-        onClose={() => setShowToast(false)}
+        message={toastMessage}
+        type={toastType}
+        onClose={hideToast}
       />
     </>
   );
 }
+

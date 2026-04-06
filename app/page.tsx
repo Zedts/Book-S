@@ -6,7 +6,7 @@ import UserHome from '@/src/main/user/home';
 import UserExplore from '@/src/main/user/explore';
 import UserMyBooks from '@/src/main/user/my-books';
 import UserFavorites from '@/src/main/user/favorites';
-import UserLibrary from '@/src/main/user/library';
+import UserCart from '@/src/main/user/cart';
 import UserSettings from '@/src/main/user/settings';
 import { getCategories } from '@/src/lib/actions/category';
 import { getBooks } from '@/src/lib/actions/book';
@@ -20,8 +20,7 @@ type PageProps = {
 };
 
 export default async function Page({ searchParams }: PageProps) {
-  const resolvedParams = searchParams ? await searchParams : undefined;
-  const view = resolvedParams?.view;
+  const { view } = (await searchParams) || {};
 
   // Prefetch data on the server for views that need books and categories
   const categories = await getCategories();
@@ -33,9 +32,9 @@ export default async function Page({ searchParams }: PageProps) {
     'admin-home': <AdminHome />,
     'user-home': <UserHome initialCategories={categories} initialBooks={books} />,
     'user-explore': <UserExplore initialCategories={categories} initialBooks={books} />,
-    'user-my-books': <UserMyBooks initialBooks={books} />,
+    'user-my-books': <UserMyBooks />,
     'user-favorites': <UserFavorites initialBooks={books} />,
-    'user-library': <UserLibrary initialCategories={categories} initialBooks={books} />,
+    'user-cart': <UserCart />,
     'user-settings': <UserSettings />,
   };
 

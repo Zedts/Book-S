@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { CheckCircle2, X } from "lucide-react";
+import { CheckCircle2, X, AlertCircle } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 
 export interface NotificationProps {
@@ -10,6 +10,7 @@ export interface NotificationProps {
   message: string;
   onClose: () => void;
   duration?: number;
+  type?: "success" | "error";
 }
 
 export default function Notification({
@@ -17,6 +18,7 @@ export default function Notification({
   message,
   onClose,
   duration = 3000,
+  type = "success",
 }: NotificationProps) {
   const [mounted, setMounted] = useState(false);
 
@@ -42,7 +44,11 @@ export default function Notification({
       "bg-slate-800 text-white animate-in slide-in-from-bottom-5 fade-in"
     )}>
       <div className="flex items-center gap-3">
-        <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
+        {type === "success" ? (
+          <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
+        ) : (
+          <AlertCircle className="w-6 h-6 text-rose-500 shrink-0" />
+        )}
         <p className="font-medium text-sm sm:text-base">{message}</p>
       </div>
       <button 

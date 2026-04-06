@@ -10,6 +10,8 @@ export const useAuthForm = () => {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -18,10 +20,17 @@ export const useAuthForm = () => {
     setLoading(true);
     setError(null);
 
+    if (!captchaToken) {
+      setError("Silakan centang reCAPTCHA untuk memverifikasi bahwa Anda bukan robot.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append('email', email);
       formData.append('password', password);
+      formData.append('captchaToken', captchaToken);
       
       let res;
       if (isLogin) {
@@ -57,6 +66,7 @@ export const useAuthForm = () => {
     setError(null);
     setFullName("");
     setPhone("");
+    setCaptchaToken(null);
   };
 
   return {
@@ -71,6 +81,8 @@ export const useAuthForm = () => {
     setFullName,
     phone,
     setPhone,
+    captchaToken,
+    setCaptchaToken,
     error,
     loading,
     handleSubmit,
