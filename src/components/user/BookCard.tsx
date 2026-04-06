@@ -68,11 +68,13 @@ export default function BookCard({ book, index = 0 }: { book: Book, index?: numb
       </div>
     </div>
     
-    <BookDetailModal 
-      book={book} 
-      isOpen={isDetailOpen} 
-      onClose={() => setIsDetailOpen(false)} 
-    />
+    {isDetailOpen && (
+      <BookDetailModal 
+        book={book} 
+        isOpen={isDetailOpen} 
+        onClose={() => setIsDetailOpen(false)} 
+      />
+    )}
   </>
   );
 }

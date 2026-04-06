@@ -7,23 +7,19 @@ export function proxy(request: NextRequest) {
 
     url.pathname = '/';
 
-    if (pathname === '/about-us') {
-      url.searchParams.set('view', 'about-us');
-      return NextResponse.rewrite(url);
-    }
-    
-    if (pathname === '/auth') {
-      url.searchParams.set('view', 'auth');
-      return NextResponse.rewrite(url);
-    }
-    
-    if (pathname === '/admin/home') {
-      url.searchParams.set('view', 'admin-home');
-      return NextResponse.rewrite(url);
-    }
-    
-    if (pathname === '/user/home') {
-      url.searchParams.set('view', 'user-home');
+    const routeMap: Record<string, string> = {
+      '/about-us': 'about-us',
+      '/auth': 'auth',
+      '/admin/home': 'admin-home',
+      '/user/home': 'user-home',
+      '/user/explore': 'user-explore',
+      '/user/my-books': 'user-my-books',
+      '/user/favorites': 'user-favorites',
+      '/user/library': 'user-library',
+    };
+
+    if (routeMap[pathname]) {
+      url.searchParams.set('view', routeMap[pathname]);
       return NextResponse.rewrite(url);
     }
 }

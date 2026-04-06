@@ -51,6 +51,95 @@ function NavItem({ href, icon: Icon, label, active, collapsed }: NavItemProps) {
   );
 }
 
+interface SidebarBrandProps {
+  isCollapsed?: boolean;
+}
+
+function SidebarBrand({ isCollapsed }: SidebarBrandProps) {
+  return (
+    <div className={cn("flex items-center gap-3", isCollapsed ? "justify-center flex-col px-0" : "px-2")}>
+      <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center shadow-lg shadow-slate-200 shrink-0">
+        <BookOpen className="w-6 h-6 text-white" />
+      </div>
+      {!isCollapsed && (
+        <div>
+          <h2 className="text-xl font-bold text-slate-800 leading-none">Book&apos;S</h2>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Premium Store</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface NavLinksProps {
+  navItems: { href: string; icon: React.ElementType; label: string }[];
+  pathname: string;
+  isCollapsed?: boolean;
+}
+
+function NavLinks({ navItems, pathname, isCollapsed }: NavLinksProps) {
+  return (
+    <nav className="flex-1 space-y-2">
+      {!isCollapsed && (
+        <p className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Menu Utama</p>
+      )}
+      {navItems.map((item) => (
+        <NavItem 
+          key={item.label} 
+          href={item.href} 
+          icon={item.icon} 
+          label={item.label} 
+          active={pathname === item.href}
+          collapsed={isCollapsed}
+        />
+      ))}
+    </nav>
+  );
+}
+
+interface UserAccountProps {
+  user: { id: string; role: string; fullName: string } | null;
+  isCollapsed?: boolean;
+  onLogout: () => void;
+}
+
+function UserAccount({ user, isCollapsed, onLogout }: UserAccountProps) {
+  return (
+    <div className={cn(
+      "rounded-2xl transition-all duration-300",
+      isCollapsed 
+        ? "flex flex-col items-center gap-4 bg-transparent border-transparent backdrop-blur-none p-0" 
+        : "p-4 bg-slate-800/10 border border-white/20 backdrop-blur-md"
+    )}>
+      <div className={cn("flex items-center", isCollapsed ? "justify-center" : "gap-3 mb-3")}>
+        <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden shrink-0">
+           <img src="https://i.pravatar.cc/100?img=12" alt="User" className="w-full h-full object-cover" />
+        </div>
+        {!isCollapsed && (
+          <div className="flex-1 min-w-0 text-left">
+            <p className="text-sm font-bold text-slate-800 truncate">{user?.fullName || "Regular User"}</p>
+            <p className="text-[10px] font-medium text-slate-500 truncate">Premium Member</p>
+          </div>
+        )}
+      </div>
+      
+      <Button 
+        onClick={onLogout}
+        className={cn(
+          "text-xs font-bold transition-all duration-300 border shadow-sm flex items-center justify-center bg-slate-100/80 text-slate-600 border-slate-200 hover:bg-slate-800 hover:text-white hover:border-slate-800",
+          isCollapsed 
+            ? "w-10 h-10 p-0 rounded-xl mx-auto shrink-0" 
+            : "w-full h-10 py-2 px-4 rounded-xl gap-2"
+        )}
+        title={isCollapsed ? "Keluar" : undefined}
+      >
+        <LogOut className="w-4 h-4 shrink-0" />
+        {!isCollapsed && "Keluar"}
+      </Button>
+    </div>
+  );
+}
+
 interface UserSidebarProps {
   isCollapsed?: boolean;
   onToggle?: () => void;
@@ -63,10 +152,10 @@ export default function UserSidebar({ isCollapsed, onToggle, isMobile }: UserSid
 
   const navItems = [
     { href: "/user/home", icon: Home, label: "Beranda" },
-    { href: "#explore", icon: Compass, label: "Jelajahi" },
-    { href: "#my-books", icon: BookOpen, label: "Buku Saya" },
-    { href: "#favorites", icon: Heart, label: "Favorit" },
-    { href: "#library", icon: Library, label: "Perpustakaan" },
+    { href: "/user/explore", icon: Compass, label: "Jelajahi" },
+    { href: "/user/my-books", icon: BookOpen, label: "Progress" },
+    { href: "/user/favorites", icon: Heart, label: "Favorit" },
+    { href: "/user/library", icon: Library, label: "Perpustakaan" },
   ];
 
   if (isMobile) {
@@ -89,17 +178,8 @@ export default function UserSidebar({ isCollapsed, onToggle, isMobile }: UserSid
           )}
         >
           {/* Header with Close Button */}
-          <div className="flex items-center justify-between mb-10 px-2 mt-1">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center shadow-lg shadow-slate-200 shrink-0">
-                <BookOpen className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-800 leading-none">Book&apos;S</h2>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Premium Store</span>
-              </div>
-            </div>
-            
+          <div className="flex items-center justify-between mb-10 mt-1">
+            <SidebarBrand />
             <button 
               onClick={onToggle}
               className="w-8 h-8 -mr-2 rounded-lg hover:bg-slate-200/50 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-all"
@@ -109,20 +189,7 @@ export default function UserSidebar({ isCollapsed, onToggle, isMobile }: UserSid
             </button>
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 space-y-2 overflow-y-auto no-scrollbar">
-            <p className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Menu Utama</p>
-            {navItems.map((item) => (
-              <NavItem 
-                key={item.label} 
-                href={item.href} 
-                icon={item.icon} 
-                label={item.label} 
-                active={pathname === item.href}
-                collapsed={false}
-              />
-            ))}
-          </nav>
+          <NavLinks navItems={navItems} pathname={pathname} />
 
           {/* Footer / Account */}
           <div className="mt-auto space-y-4 pt-6 border-t border-slate-200/50">
@@ -133,26 +200,7 @@ export default function UserSidebar({ isCollapsed, onToggle, isMobile }: UserSid
               active={pathname === "/settings"} 
               collapsed={false}
             />
-            
-            <div className="p-4 rounded-2xl bg-slate-800/5 border border-slate-200/50 flex flex-col gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden shrink-0">
-                   <img src="https://i.pravatar.cc/100?img=12" alt="User" className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1 min-w-0 text-left">
-                  <p className="text-sm font-bold text-slate-800 truncate">{user?.fullName || "Regular User"}</p>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider truncate">Premium</p>
-                </div>
-              </div>
-              
-              <Button 
-                onClick={() => { onToggle?.(); handleLogout(); }}
-                className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-center transition-colors shadow-md flex justify-center items-center gap-2"
-              >
-                <LogOut className="w-4 h-4" />
-                Keluar
-              </Button>
-            </div>
+            <UserAccount user={user} onLogout={() => { onToggle?.(); handleLogout(); }} />
           </div>
         </aside>
       </>
@@ -168,18 +216,8 @@ export default function UserSidebar({ isCollapsed, onToggle, isMobile }: UserSid
       )}
     >
       {/* Brand & Toggle */}
-      <div className={cn("flex items-center gap-3 mb-10 px-2", isCollapsed ? "justify-center flex-col px-0" : "justify-between")}>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center shadow-lg shadow-slate-200 shrink-0">
-            <BookOpen className="w-6 h-6 text-white" />
-          </div>
-          {!isCollapsed && (
-            <div>
-              <h2 className="text-xl font-bold text-slate-800 leading-none">Book&apos;S</h2>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Premium Store</span>
-            </div>
-          )}
-        </div>
+      <div className={cn("flex items-center mb-10 px-2", isCollapsed ? "justify-center" : "justify-between")}>
+        <SidebarBrand isCollapsed={isCollapsed} />
         
         {!isMobile && (
           <button 
@@ -194,22 +232,7 @@ export default function UserSidebar({ isCollapsed, onToggle, isMobile }: UserSid
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 space-y-2">
-        {!isCollapsed && (
-          <p className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Menu Utama</p>
-        )}
-        {navItems.map((item) => (
-          <NavItem 
-            key={item.label} 
-            href={item.href} 
-            icon={item.icon} 
-            label={item.label} 
-            active={pathname === item.href}
-            collapsed={isCollapsed}
-          />
-        ))}
-      </nav>
+      <NavLinks navItems={navItems} pathname={pathname} isCollapsed={isCollapsed} />
 
       {/* Footer / Account */}
       <div className="mt-auto space-y-4 pt-6 border-t border-white/40">
@@ -220,39 +243,7 @@ export default function UserSidebar({ isCollapsed, onToggle, isMobile }: UserSid
           active={pathname === "/settings"} 
           collapsed={isCollapsed}
         />
-        
-        <div className={cn(
-          "rounded-2xl transition-all duration-300",
-          isCollapsed 
-            ? "flex flex-col items-center gap-4 bg-transparent border-transparent backdrop-blur-none p-0" 
-            : "p-4 bg-slate-800/10 border border-white/20 backdrop-blur-md"
-        )}>
-          <div className={cn("flex items-center", isCollapsed ? "justify-center" : "gap-3 mb-3")}>
-            <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden shrink-0">
-               <img src="https://i.pravatar.cc/100?img=12" alt="User" className="w-full h-full object-cover" />
-            </div>
-            {!isCollapsed && (
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-sm font-bold text-slate-800 truncate">{user?.fullName || "Regular User"}</p>
-                <p className="text-[10px] font-medium text-slate-500 truncate">Premium Member</p>
-              </div>
-            )}
-          </div>
-          
-          <Button 
-            onClick={handleLogout}
-            className={cn(
-              "text-xs font-bold transition-all duration-300 border shadow-sm flex items-center justify-center bg-slate-100/80 text-slate-600 border-slate-200 hover:bg-slate-800 hover:text-white hover:border-slate-800",
-              isCollapsed 
-                ? "w-10 h-10 p-0 rounded-xl mx-auto shrink-0" 
-                : "w-full h-10 py-2 px-4 rounded-xl gap-2"
-            )}
-            title={isCollapsed ? "Keluar" : undefined}
-          >
-            <LogOut className="w-4 h-4 shrink-0" />
-            {!isCollapsed && "Keluar"}
-          </Button>
-        </div>
+        <UserAccount user={user} isCollapsed={isCollapsed} onLogout={handleLogout} />
       </div>
     </aside>
   );

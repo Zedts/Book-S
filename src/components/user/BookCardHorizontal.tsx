@@ -9,7 +9,15 @@ import type { Book } from "@/src/types/landing";
 import { formatCurrency } from "@/src/lib/utils";
 import { useFavorites } from "@/src/hooks/useFavorites";
 
-export default function BookCardHorizontal({ book }: { book: Book }) {
+export default function BookCardHorizontal({
+  book,
+  progress,
+  statusBadge
+}: {
+  book: Book;
+  progress?: number;
+  statusBadge?: React.ReactNode;
+}) {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const { toggleFavorite, isFavorite } = useFavorites();
   
@@ -27,13 +35,18 @@ export default function BookCardHorizontal({ book }: { book: Book }) {
         </div>
 
         <div className="flex-1 text-center sm:text-left min-w-0 w-full">
-          <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
+          <div className="flex items-center justify-center sm:justify-start gap-2 mb-2 pr-12 sm:pr-0">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest truncate">
               {book.category?.name || 'Uncategorized'}
             </span>
             <div className="hidden sm:flex shrink-0 items-center gap-1 text-amber-500 font-bold text-xs bg-amber-50 px-2 py-0.5 rounded-full ml-auto">
               <Sparkles className="w-3 h-3" /> New
             </div>
+            {statusBadge && (
+              <div className="absolute top-4 right-4 sm:static sm:ml-auto">
+                {statusBadge}
+              </div>
+            )}
           </div>
           <h4 className="text-base sm:text-lg font-extrabold text-slate-800 mb-1 group-hover:text-slate-600 transition-colors truncate">
             {book.title}
@@ -41,6 +54,24 @@ export default function BookCardHorizontal({ book }: { book: Book }) {
           <p className="text-xs sm:text-sm text-slate-500 font-medium mb-4 truncate">
             {book.author}
           </p>
+
+          {progress !== undefined && (
+            <div className="w-full mb-4">
+              <div className="flex justify-between text-xs font-semibold mb-1.5 text-slate-500">
+                <span>Progress Membaca</span>
+                <span>{progress}%</span>
+              </div>
+              <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                <div 
+                  className="h-full bg-indigo-500 rounded-full transition-all duration-1000 ease-out relative overflow-hidden" 
+                  style={{ width: `${progress}%` }}
+                >
+                  <div className="absolute inset-0 bg-white/20 w-full h-full -translate-x-full animate-[shimmer_2s_infinite]" />
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col xl:flex-row items-center xl:justify-between gap-3 xl:gap-4 mt-auto">
             <p className="text-lg xl:text-xl font-black text-slate-900 leading-none">
               {formatCurrency(book.price)}
@@ -71,11 +102,13 @@ export default function BookCardHorizontal({ book }: { book: Book }) {
         <div className="absolute -top-10 -right-10 w-24 h-24 bg-slate-400/5 rounded-full blur-2xl group-hover:bg-slate-400/10 transition-colors pointer-events-none" />
       </div>
 
-      <BookDetailModal 
-        book={book} 
-        isOpen={isDetailOpen} 
-        onClose={() => setIsDetailOpen(false)} 
-      />
+      {isDetailOpen && (
+        <BookDetailModal 
+          book={book} 
+          isOpen={isDetailOpen} 
+          onClose={() => setIsDetailOpen(false)} 
+        />
+      )}
     </>
   );
 }
