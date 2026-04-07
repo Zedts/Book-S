@@ -5,6 +5,9 @@ import UserLayout from "@/src/components/layout/UserLayout";
 import { useRequireRole } from "@/src/hooks/useRequireRole";
 import { useEffect, useState } from "react";
 import { getCart, updateCartItemQuantity, removeFromCart, processCheckout } from "@/src/lib/actions/cart";
+import { verifyPaymentPin, getUserProfile } from "@/src/lib/actions/user";
+import PaymentPinModal from "@/src/components/user/PaymentPinModal";
+import AddressWarningModal from "@/src/components/user/AddressWarningModal";
 import { CartItemCard } from "@/src/components/user/CartItemCard";
 import { formatCurrency } from "@/src/lib/utils";
 import Notification from "@/src/components/ui/Notification";
@@ -26,6 +29,7 @@ type CartItemData = {
 
 export default function UserCart() {
   const { user } = useRequireRole("users");
+  const [userProfile, setUserProfile] = useState<{ address: string | null } | null>(null);
   
   const [cartItems, setCartItems] = useState<CartItemData[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -35,6 +39,8 @@ export default function UserCart() {
   // States for Checkout
   const [paymentMethod, setPaymentMethod] = useState<string>("Transfer Bank");
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [isAddressWarningOpen, setIsAddressWarningOpen] = useState(false);
 
   const { 
     isOpen: notifOpen, 
@@ -53,9 +59,21 @@ export default function UserCart() {
     setLoading(false);
   };
 
+  const fetchProfile = async () => {
+    try {
+      const profile = await getUserProfile();
+      setUserProfile(profile);
+    } catch {
+      console.error("Failed to fetch user profile");
+    }
+  };
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (user) fetchCart();
+    if (user) {
+      fetchCart();
+      fetchProfile();
+    }
   }, [user]);
 
   const handleUpdateQty = async (id: string, newQty: number) => {
@@ -104,20 +122,45 @@ export default function UserCart() {
     }
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (selectedItems.size === 0) {
       showNotification("Pilih minimal satu item untuk dicheckout.", "error");
       return;
     }
+    if (!userProfile?.address || userProfile.address.trim().length === 0) {
+      setIsAddressWarningOpen(true);
+      return;
+    }
+    
+    // Check if user has payment pin set
+    if (!(userProfile as any).hasPaymentPin) {
+      showNotification("Anda belum mengatur Payment PIN. Silakan atur di Pengaturan Keamanan.", "error");
+      return;
+    }
 
+    setIsPinModalOpen(true);
+  };
+
+  const processPayment = async (pin: string) => {
     setIsCheckingOut(true);
+    
+    // Verify PIN
+    const verifyRes = await verifyPaymentPin(pin);
+    if (!verifyRes.success) {
+      setIsCheckingOut(false);
+      throw new Error(verifyRes.message);
+    }
+
+    // Process Checkout
     const res = await processCheckout(Array.from(selectedItems), paymentMethod);
     if (res.success) {
       showNotification(res.message, "success");
       setSelectedItems(new Set());
-      await fetchCart(); // Re-fetch untuk menghapus state lama dan up to date stock
+      setIsPinModalOpen(false);
+      await fetchCart();
     } else {
-      showNotification(res.message, "error");
+      setIsCheckingOut(false);
+      throw new Error(res.message);
     }
     setIsCheckingOut(false);
   };
@@ -267,6 +310,18 @@ export default function UserCart() {
           </div>
         )}
       </div>
+
+      <AddressWarningModal 
+        isOpen={isAddressWarningOpen} 
+        onClose={() => setIsAddressWarningOpen(false)} 
+      />
+
+      <PaymentPinModal 
+        isOpen={isPinModalOpen} 
+        onClose={() => !isCheckingOut && setIsPinModalOpen(false)} 
+        onSubmit={processPayment} 
+        loading={isCheckingOut} 
+      />
 
       <Notification 
         isOpen={notifOpen}

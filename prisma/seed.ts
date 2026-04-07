@@ -7,6 +7,7 @@ const prisma = new PrismaClient();
 async function main() {
   const adminPassword = await bcrypt.hash('admin123', 10);
   const userPassword = await bcrypt.hash('user123', 10);
+  const defaultPin = await bcrypt.hash('123456', 10);
 
   // Setup Admin
   const admin = await prisma.user.upsert({
@@ -18,6 +19,9 @@ async function main() {
       fullName: 'Administrator',
       phone: '081234567890',
       role: 'admin',
+      bio: 'Suka mengelola buku dan mengatur layanan secara profesional.',
+      address: 'Jl. Admin Pusat No. 1, Jakarta',
+      paymentPin: defaultPin,
     },
   });
 
@@ -31,6 +35,9 @@ async function main() {
       fullName: 'Regular User',
       phone: '089876543210',
       role: 'users',
+      bio: 'Pecinta buku fiksi dan teknologi.',
+      address: 'Jl. Merdeka No. 123, Bandung',
+      paymentPin: defaultPin,
     },
   });
 
@@ -128,7 +135,7 @@ async function main() {
       price: 110000,
       stock: 75,
       rating: 4.8,
-      imageUrl: 'https://images.unsplash.com/photo-1589998059171-989d887df466?auto=format&fit=crop&q=80&w=400&h=600',
+      imageUrl: 'https://images.unsplash.com/photo-1686764288887-dae4e7d50d58?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       imageAlt: 'Atomic Habits Cover',
       isFeatured: false,
       categoryId: createdCategories['pengembangan-diri'],
