@@ -8,7 +8,7 @@ if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
 
 const secretKey = new TextEncoder().encode(secret);
 
-export async function signToken(payload: { id: string; role: string; fullName: string }) {
+export async function signToken(payload: { id: string; role: string; fullName: string; avatarUrl?: string | null }) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -19,7 +19,7 @@ export async function signToken(payload: { id: string; role: string; fullName: s
 export async function verifyToken(token: string) {
   try {
     const { payload } = await jwtVerify(token, secretKey);
-    return payload as { id: string; role: string; fullName: string };
+    return payload as { id: string; role: string; fullName: string; avatarUrl?: string | null };
   } catch {
     return null;
   }

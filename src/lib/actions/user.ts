@@ -6,11 +6,12 @@ import { revalidatePath } from 'next/cache';
 import fs from 'fs/promises';
 import path from 'path';
 import bcrypt from 'bcryptjs';
+import type { UserProfile, UserItem } from '@/src/types/user';
 
 /**
  * Mendapatkan profil lengkap dari current user.
  */
-export async function getUserProfile() {
+export async function getUserProfile(): Promise<UserProfile> {
   const session = await getSession();
   if (!session?.id) {
     throw new Error("Unauthorized");
@@ -22,10 +23,12 @@ export async function getUserProfile() {
       id: true,
       fullName: true,
       email: true,
+      role: true,
       bio: true,
       address: true,
       avatarUrl: true,
       paymentPin: true,
+      createdAt: true,
     }
   });
 
@@ -284,3 +287,51 @@ export async function verifyPaymentPin(pin: string) {
     return { success: false, message: "Terjadi kesalahan internal server." };
   }
 }
+
+/**
+ * Admin: Mendapatkan daftar semua user.
+ */
+export async function getAllUsers(): Promise<UserItem[]> {
+  const session = await getSession();
+  if (!session?.id || session.role !== 'admin') {
+    throw new Error("Unauthorized");
+  }
+
+  const users = await prisma.user.findMany({
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      role: true,
+      avatarUrl: true,
+      createdAt: true,
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  return users;
+}
+
+/**
+ * Admin: Menghapus user berdasarkan ID.
+ */
+export async function deleteUser(id: string) {
+  const session = await getSession();
+  if (!session?.id || session.role !== 'admin') {
+    return { success: false, message: "Unauthorized" };
+  }
+
+  if (session.id === id) {
+    return { success: false, message: "Admin tidak dapat menghapus dirinya sendiri." };
+  }
+
+  try {
+    await prisma.user.delete({ where: { id } });
+    revalidatePath('/admin/users');
+    return { success: true, message: "Pengguna berhasil dihapus." };
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return { success: false, message: "Gagal menghapus pengguna." };
+  }
+}
+

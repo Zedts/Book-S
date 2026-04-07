@@ -3,7 +3,8 @@
 import { ShoppingCart, ShieldCheck, CreditCard, Wallet, Truck } from "lucide-react";
 import UserLayout from "@/src/components/layout/UserLayout";
 import { useRequireRole } from "@/src/hooks/useRequireRole";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import type { UserProfile } from "@/src/types/user";
 import { getCart, updateCartItemQuantity, removeFromCart, processCheckout } from "@/src/lib/actions/cart";
 import { verifyPaymentPin, getUserProfile } from "@/src/lib/actions/user";
 import PaymentPinModal from "@/src/components/user/PaymentPinModal";
@@ -29,7 +30,7 @@ type CartItemData = {
 
 export default function UserCart() {
   const { user } = useRequireRole("users");
-  const [userProfile, setUserProfile] = useState<{ address: string | null } | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   
   const [cartItems, setCartItems] = useState<CartItemData[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -50,31 +51,33 @@ export default function UserCart() {
     onClose: hideNotif 
   } = useNotification();
 
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     setLoading(true);
-    const res = await getCart();
-    if (res.success && res.data) {
-      setCartItems(res.data as CartItemData[]);
+    try {
+      const res = await getCart();
+      if (res.success && res.data) {
+        setCartItems(res.data as CartItemData[]);
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
+  }, []);
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       const profile = await getUserProfile();
-      setUserProfile(profile);
+      setUserProfile(profile as UserProfile);
     } catch {
       console.error("Failed to fetch user profile");
     }
-  };
+  }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (user) {
       fetchCart();
       fetchProfile();
     }
-  }, [user]);
+  }, [user, fetchCart, fetchProfile]);
 
   const handleUpdateQty = async (id: string, newQty: number) => {
     setUpdatingId(id);
@@ -133,7 +136,7 @@ export default function UserCart() {
     }
     
     // Check if user has payment pin set
-    if (!(userProfile as any).hasPaymentPin) {
+    if (!userProfile?.hasPaymentPin) {
       showNotification("Anda belum mengatur Payment PIN. Silakan atur di Pengaturan Keamanan.", "error");
       return;
     }

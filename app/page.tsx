@@ -2,6 +2,12 @@ import Landing from '@/src/main/landing';
 import AboutUs from '@/src/main/about-us';
 import Auth from '@/src/main/auth';
 import AdminHome from '@/src/main/admin/home';
+import AdminBooks from '@/src/main/admin/books';
+import AdminCategories from '@/src/main/admin/categories';
+import AdminUsers from '@/src/main/admin/users';
+import AdminTransactions from '@/src/main/admin/transactions';
+import AdminOrders from '@/src/main/admin/orders';
+import AdminSettings from '@/src/main/admin/settings';
 import UserHome from '@/src/main/user/home';
 import UserExplore from '@/src/main/user/explore';
 import UserMyBooks from '@/src/main/user/my-books';
@@ -33,6 +39,12 @@ export default async function Page({ searchParams }: PageProps) {
     'about-us': <AboutUs />,
     'auth': <Auth />,
     'admin-home': <AdminHome />,
+    'admin-books': <AdminBooks />,
+    'admin-categories': <AdminCategories />,
+    'admin-users': <AdminUsers />,
+    'admin-transactions': <AdminTransactions />,
+    'admin-orders': <AdminOrders />,
+    'admin-settings': <AdminSettings />,
     'user-home': <UserHome initialCategories={categories} initialBooks={books} />,
     'user-explore': <UserExplore initialCategories={categories} initialBooks={books} />,
     'user-my-books': <UserMyBooks />,

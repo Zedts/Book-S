@@ -1,57 +1,198 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { ShieldCheck, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Heart, ShoppingCart, DollarSign, BookOpen, TrendingUp, TrendingDown, ArrowUpRight, Loader2 } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
 import { GlassCard } from "@/src/components/ui/GlassCard";
 import { useRequireRole } from "@/src/hooks/useRequireRole";
+import AdminLayout from "@/src/components/layout/AdminLayout";
+import { cn, formatCurrency } from "@/src/lib/utils";
+import { getAllOrders, getOrderStats } from "@/src/lib/actions/order";
+import { getBooks } from "@/src/lib/actions/book";
+import type { OrderItem, OrderStats } from "@/src/types/order";
+
+// Mock data remains for "Buku Terpopuler" as it needs specific aggregation logic
+const MOCK_TOP_BOOKS = [
+  { id: "1", title: "Atomic Habits", author: "James Clear", sales: 1204, image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=150&q=80" },
+  { id: "2", title: "The Psychology of Money", author: "Morgan Housel", sales: 980, image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=150&q=80" },
+  { id: "3", title: "Sapiens", author: "Yuval Noah Harari", sales: 856, image: "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=150&q=80" },
+  { id: "4", title: "Thinking, Fast and Slow", author: "Daniel Kahneman", sales: 742, image: "https://images.unsplash.com/photo-1553729459-efe14ef6055d?auto=format&fit=crop&w=150&q=80" },
+];
 
 export default function AdminHome() {
-  const { loading, handleLogout } = useRequireRole('admin');
+  const { loading: authLoading } = useRequireRole('admin');
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<OrderStats | null>(null);
+  const [recentOrders, setRecentOrders] = useState<OrderItem[]>([]);
+  const [totalBooks, setTotalBooks] = useState(0);
 
-  if (loading) {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [statsData, ordersData, booksData] = await Promise.all([
+          getOrderStats(),
+          getAllOrders(),
+          getBooks()
+        ]);
+        
+        setStats(statsData);
+        if (Array.isArray(ordersData)) {
+          setRecentOrders((ordersData as unknown as OrderItem[]).slice(0, 5));
+        }
+        if (Array.isArray(booksData)) {
+          setTotalBooks(booksData.length);
+        }
+      } catch (error) {
+        console.error("Failed to load dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800"></div>
+        <Loader2 className="animate-spin h-12 w-12 text-slate-800" />
       </div>
     );
   }
 
+  const kpis = [
+    { label: "Total Pesanan", value: stats?.totalOrders.toLocaleString() || "0", icon: ShoppingCart, trend: "+5.2%", isPositive: true },
+    { label: "Total Pendapatan", value: formatCurrency(stats?.totalRevenue || 0), icon: DollarSign, trend: "+18.1%", isPositive: true },
+    { label: "Total Buku Aktif", value: totalBooks.toLocaleString(), icon: BookOpen, trend: "Stable", isPositive: true },
+    { label: "Menunggu Proses", value: stats?.pendingOrders.toLocaleString() || "0", icon: Heart, trend: "Current", isPositive: true },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-50 relative overflow-hidden">
-      {/* Background styling elements reminiscent of existing design */}
-      <div className="absolute top-[-10%] sm:top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-slate-200/50 mix-blend-multiply filter blur-[80px] sm:blur-[120px] opacity-60 animate-blob pointer-events-none" />
-      <div className="absolute bottom-[-10%] sm:bottom-[-20%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-slate-300/40 mix-blend-multiply filter blur-[80px] sm:blur-[120px] opacity-70 animate-blob animation-delay-2000 pointer-events-none" />
-
-      <main className="container mx-auto px-6 lg:px-12 py-16 relative z-10">
-        <GlassCard as="header" className="flex flex-wrap gap-4 items-center justify-between mb-12 p-6 rounded-3xl border-white/80 shadow-lg">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-slate-800 text-white flex items-center justify-center shadow-lg">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-slate-800">Hello Admin</h1>
-              <p className="text-slate-500 font-medium text-sm">Dashboard Administrator</p>
-            </div>
+    <AdminLayout>
+      <div className="space-y-8 pb-12 reveal active">
+        {/* Header Overview */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Ringkasan Admin</h1>
+            <p className="text-slate-500 mt-1">Pantau aktivitas toko dan kinerja penjualan real-time.</p>
           </div>
-
-          <Button
-            onClick={handleLogout}
-            variant="ghost"
-          >
-            <LogOut className="w-4 h-4" />
-            Keluar
+          <Button variant="primary" className="shrink-0 gap-2 shadow-lg">
+            <ArrowUpRight className="w-4 h-4" />
+            Buat Laporan
           </Button>
-        </GlassCard>
+        </div>
 
-        <GlassCard as="section" className="rounded-3xl p-10 min-h-[60vh] flex items-center justify-center shadow-xl border-white/80">
-          <div className="text-center max-w-md">
-            <h2 className="text-3xl font-extrabold text-slate-800 mb-4">Area Khusus Admin</h2>
-            <p className="text-slate-600 font-medium leading-relaxed">
-              Selamat datang di dashboard administratif. Ini adalah area aman dimana hanya pengguna dengan role <span className="font-bold underline decoration-slate-300">admin</span> yang diizinkan mengakses halaman ini.
-            </p>
+        {/* Key Metrics / KPI Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {kpis.map((stat, i) => {
+            const Icon = stat.icon;
+            return (
+              <GlassCard key={i} className="p-6 flex flex-col hover:border-slate-300 transition-colors">
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`p-3 rounded-2xl ${stat.isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <span className={`flex items-center gap-1 text-sm font-bold px-2.5 py-1 rounded-full ${stat.isPositive ? 'bg-emerald-100/50 text-emerald-700' : 'bg-rose-100/50 text-rose-700'}`}>
+                    {stat.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                    {stat.trend}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-slate-500 text-sm font-medium mb-1">{stat.label}</h3>
+                  <p className="text-3xl font-extrabold text-slate-800 tracking-tight">{stat.value}</p>
+                </div>
+              </GlassCard>
+            );
+          })}
+        </div>
+
+        {/* Detail Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Top Books Chart / List */}
+          <div className="lg:col-span-1 space-y-6">
+            <h2 className="text-xl font-bold text-slate-800">Buku Terpopuler</h2>
+            <GlassCard className="p-1 divide-y divide-slate-200/50">
+              {MOCK_TOP_BOOKS.map((book, index) => (
+                <div key={book.id} className="flex items-center gap-4 p-4 hover:bg-slate-50/50 transition-colors">
+                  <span className="text-lg font-black text-slate-300 w-4 text-center">{index + 1}</span>
+                  <img src={book.image} alt={book.title} className="w-12 h-16 object-cover rounded-md shadow-sm" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-slate-800 truncate">{book.title}</p>
+                    <p className="text-xs text-slate-500 truncate">{book.author}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-slate-800">{book.sales}</p>
+                    <p className="text-xs text-slate-500">terjual</p>
+                  </div>
+                </div>
+              ))}
+              <Button variant="ghost" fullWidth className="py-4 text-slate-600 font-semibold hover:bg-slate-50">
+                Lihat Semua Buku
+              </Button>
+            </GlassCard>
           </div>
-        </GlassCard>
-      </main>
-    </div>
+
+          {/* Recent Transactions List */}
+          <div className="lg:col-span-2 space-y-6">
+            <h2 className="text-xl font-bold text-slate-800">Transaksi Terbaru</h2>
+            <GlassCard className="overflow-hidden">
+              <div className="overflow-x-auto no-scrollbar">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50/50 border-b border-slate-200/50">
+                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">ID Transaksi</th>
+                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Pembeli</th>
+                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Tanggal</th>
+                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Nominal</th>
+                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {recentOrders.map((order) => (
+                      <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-6 py-4">
+                          <span className="font-mono text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-1 rounded-md">
+                            {order.id.slice(0, 8).toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 font-bold text-slate-800">{order.user.fullName}</td>
+                        <td className="px-6 py-4 text-sm text-slate-500">
+                          {new Date(order.createdAt).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short"
+                          })}
+                        </td>
+                        <td className="px-6 py-4 font-semibold text-slate-800">{formatCurrency(order.total)}</td>
+                        <td className="px-6 py-4 text-right">
+                          <span className={cn(
+                            "inline-flex px-2.5 py-1 text-[10px] font-bold rounded-full border uppercase",
+                            order.status === 'completed' ? "bg-emerald-50 text-emerald-700 border-emerald-200/50" : "bg-blue-50 text-blue-700 border-blue-200/50"
+                          )}>
+                            {order.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {recentOrders.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                          Belum ada transaksi terbaru.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div className="p-4 border-t border-slate-200/50 bg-slate-50/30">
+                <Button variant="ghost" fullWidth className="text-slate-600 font-semibold hover:bg-slate-100">
+                  Lihat Semua Transaksi
+                </Button>
+              </div>
+            </GlassCard>
+          </div>
+        </div>
+      </div>
+    </AdminLayout>
   );
 }

@@ -55,7 +55,6 @@ export function CategoriesSection({
             category={category} 
             index={index} 
             isActive={activeCategory === category.id}
-            variant={variant}
             onClick={() => {
               onSelectCategory(category.id);
               if (!isDashboard) {
@@ -73,13 +72,11 @@ function CategoryChip({
   category, 
   index = 0, 
   isActive = false, 
-  variant = 'landing',
   onClick 
 }: { 
   category: Category; 
   index?: number; 
   isActive?: boolean; 
-  variant?: 'landing' | 'dashboard';
   onClick?: () => void
 }) {
   const staggerClass = `stagger-${((index % 4) + 1)}`;

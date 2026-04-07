@@ -56,6 +56,7 @@ export async function loginAction(formData: FormData) {
       id: user.id,
       role: user.role,
       fullName: user.fullName,
+      avatarUrl: user.avatarUrl,
     });
 
     await setSession(token);
@@ -105,6 +106,7 @@ export async function registerAction(formData: FormData) {
       id: newUser.id,
       role: newUser.role,
       fullName: newUser.fullName,
+      avatarUrl: newUser.avatarUrl,
     });
 
     await setSession(token);
