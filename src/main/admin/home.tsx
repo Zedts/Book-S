@@ -9,16 +9,17 @@ import { useRequireRole } from "@/src/hooks/useRequireRole";
 import AdminLayout from "@/src/components/layout/AdminLayout";
 import { cn, formatCurrency } from "@/src/lib/utils";
 import { getAllOrders, getOrderStats } from "@/src/lib/actions/order";
-import { getBooks } from "@/src/lib/actions/book";
+import { getBooks, getTopBooks } from "@/src/lib/actions/book";
 import type { OrderItem, OrderStats } from "@/src/types/order";
 
-// Mock data remains for "Buku Terpopuler" as it needs specific aggregation logic
-const MOCK_TOP_BOOKS = [
-  { id: "1", title: "Atomic Habits", author: "James Clear", sales: 1204, image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&w=150&q=80" },
-  { id: "2", title: "The Psychology of Money", author: "Morgan Housel", sales: 980, image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=150&q=80" },
-  { id: "3", title: "Sapiens", author: "Yuval Noah Harari", sales: 856, image: "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=150&q=80" },
-  { id: "4", title: "Thinking, Fast and Slow", author: "Daniel Kahneman", sales: 742, image: "https://images.unsplash.com/photo-1553729459-efe14ef6055d?auto=format&fit=crop&w=150&q=80" },
-];
+type TopBookItem = {
+  id: string;
+  title: string;
+  author: string;
+  imageUrl: string | null;
+  imageAlt: string | null;
+  sales: number;
+};
 
 export default function AdminHome() {
   const { loading: authLoading } = useRequireRole('admin');
@@ -26,14 +27,16 @@ export default function AdminHome() {
   const [stats, setStats] = useState<OrderStats | null>(null);
   const [recentOrders, setRecentOrders] = useState<OrderItem[]>([]);
   const [totalBooks, setTotalBooks] = useState(0);
+  const [topBooks, setTopBooks] = useState<TopBookItem[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsData, ordersData, booksData] = await Promise.all([
+        const [statsData, ordersData, booksData, topBooksData] = await Promise.all([
           getOrderStats(),
           getAllOrders(),
-          getBooks()
+          getBooks(),
+          getTopBooks(4)
         ]);
         
         setStats(statsData);
@@ -42,6 +45,9 @@ export default function AdminHome() {
         }
         if (Array.isArray(booksData)) {
           setTotalBooks(booksData.length);
+        }
+        if (Array.isArray(topBooksData)) {
+          setTopBooks(topBooksData);
         }
       } catch (error) {
         console.error("Failed to load dashboard data:", error);
@@ -79,7 +85,7 @@ export default function AdminHome() {
           </div>
           <Button variant="primary" className="shrink-0 gap-2 shadow-lg">
             <ArrowUpRight className="w-4 h-4" />
-            Buat Laporan
+            Unduh Laporan
           </Button>
         </div>
 
@@ -113,10 +119,10 @@ export default function AdminHome() {
           <div className="lg:col-span-1 space-y-6">
             <h2 className="text-xl font-bold text-slate-800">Buku Terpopuler</h2>
             <GlassCard className="p-1 divide-y divide-slate-200/50">
-              {MOCK_TOP_BOOKS.map((book, index) => (
+              {topBooks.map((book, index) => (
                 <div key={book.id} className="flex items-center gap-4 p-4 hover:bg-slate-50/50 transition-colors">
                   <span className="text-lg font-black text-slate-300 w-4 text-center">{index + 1}</span>
-                  <img src={book.image} alt={book.title} className="w-12 h-16 object-cover rounded-md shadow-sm" />
+                  <img src={book.imageUrl || '/placeholder-book.jpg'} alt={book.title} className="w-12 h-16 object-cover rounded-md shadow-sm" />
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-slate-800 truncate">{book.title}</p>
                     <p className="text-xs text-slate-500 truncate">{book.author}</p>
@@ -127,6 +133,11 @@ export default function AdminHome() {
                   </div>
                 </div>
               ))}
+              {topBooks.length === 0 && (
+                <div className="p-8 text-center text-slate-500 text-sm">
+                  Belum ada data penjualan buku
+                </div>
+              )}
               <Button variant="ghost" fullWidth className="py-4 text-slate-600 font-semibold hover:bg-slate-50">
                 Lihat Semua Buku
               </Button>

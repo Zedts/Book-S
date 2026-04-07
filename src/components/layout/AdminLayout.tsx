@@ -9,7 +9,7 @@ import { cn } from "@/src/lib/utils";
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(false);  
 
   useScrollReveal();
 

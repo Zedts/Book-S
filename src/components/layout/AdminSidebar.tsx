@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import Link from "next/link";
@@ -7,6 +8,7 @@ import {
   Tags, 
   Users, 
   Activity,
+  LayoutDashboard,
   ClipboardList,
   Settings, 
   LogOut, 
@@ -155,7 +157,7 @@ export default function AdminSidebar({ isCollapsed, onToggle, isMobile }: AdminS
   const { handleLogout, user } = useRequireRole();
 
   const navItems = [
-    { href: "/admin/home", icon: Activity, label: "Dashboard" },
+    { href: "/admin/home", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/admin/books", icon: Library, label: "Kelola Buku" },
     { href: "/admin/categories", icon: Tags, label: "Kelola Kategori" },
     { href: "/admin/users", icon: Users, label: "Kelola Pengguna" },

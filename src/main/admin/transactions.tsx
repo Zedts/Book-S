@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/src/components/layout/AdminLayout";
 import { GlassCard } from "@/src/components/ui/GlassCard";
-import { Search, Loader2, ArrowUpRight, DollarSign, ShoppingBag, Clock, FileText, CheckCircle2, XCircle } from "lucide-react";
+import { Button } from "@/src/components/ui/Button";
+import Modal from "@/src/components/ui/Modal";
+import { Search, Loader2, ArrowUpRight, DollarSign, ShoppingBag, Clock, FileText, CheckCircle2, XCircle, Receipt, X } from "lucide-react";
 import { getAllOrders, getOrderStats } from "@/src/lib/actions/order";
 
 type OrderItem = {
@@ -33,6 +35,14 @@ export default function AdminTransactions() {
   const [stats, setStats] = useState<OrderStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<OrderItem | null>(null);
+
+  const handleViewInvoice = (order: OrderItem) => {
+    setSelectedInvoice(order);
+    setIsInvoiceModalOpen(true);
+  };
 
   const fetchData = async () => {
     try {
@@ -140,8 +150,8 @@ export default function AdminTransactions() {
         </div>
 
         {/* Toolbar */}
-        <GlassCard className="p-4 flex gap-4">
-          <div className="flex-1 relative">
+        <GlassCard className="p-4 w-full">
+          <div className="relative w-full">
             <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="text"
@@ -179,6 +189,7 @@ export default function AdminTransactions() {
                     <th className="px-6 py-4">Total</th>
                     <th className="px-6 py-4">Metode Bayar</th>
                     <th className="px-6 py-4">Status Pesanan</th>
+                    <th className="px-6 py-4 text-right">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -217,6 +228,15 @@ export default function AdminTransactions() {
                           <span className="capitalize">{order.status}</span>
                         </div>
                       </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => handleViewInvoice(order)}
+                          className="p-2 text-slate-400 hover:text-indigo-600 bg-white rounded-lg shadow-sm border border-slate-200 transition-colors"
+                          title="Lihat Invoice"
+                        >
+                          <Receipt className="w-4 h-4" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -225,6 +245,80 @@ export default function AdminTransactions() {
           </div>
         </GlassCard>
       </div>
+
+      <Modal
+        isOpen={isInvoiceModalOpen}
+        onClose={() => setIsInvoiceModalOpen(false)}
+        title="Detail Invoice"
+        size="md"
+      >
+        {selectedInvoice && (
+          <div className="p-6">
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">ID Pesanan</p>
+                  <p className="font-mono text-sm font-bold text-slate-800">{selectedInvoice.id.toUpperCase()}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Tanggal</p>
+                  <p className="text-sm font-bold text-slate-800">
+                    {new Date(selectedInvoice.createdAt).toLocaleDateString("id-ID", {
+                      day: "numeric", month: "long", year: "numeric"
+                    })}
+                  </p>
+                </div>
+              </div>
+              <div className="pt-4 border-t border-slate-200">
+                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Informasi Pelanggan</p>
+                <p className="text-sm font-bold text-slate-800">{selectedInvoice.user.fullName}</p>
+                <p className="text-sm text-slate-600">{selectedInvoice.user.email}</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <ShoppingBag className="w-4 h-4 text-slate-400" />
+                Rincian Item
+              </h4>
+              <div className="bg-white border text-sm border-slate-200 rounded-xl divide-y divide-slate-100">
+                {selectedInvoice.orderItems.map((item, idx) => (
+                  <div key={idx} className="flex justify-between p-3 items-center">
+                    <p className="font-medium text-slate-700">{item.book.title}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center py-4 border-y border-dashed border-slate-200 mb-6 bg-slate-50/50 px-4 rounded-lg">
+              <div>
+                <p className="text-sm font-medium text-slate-500">Total Pembayaran</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700 uppercase">
+                    {selectedInvoice.paymentMethod}
+                  </span>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                    selectedInvoice.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
+                  }`}>
+                    {selectedInvoice.paymentStatus}
+                  </span>
+                </div>
+              </div>
+              <p className="text-2xl font-black text-slate-800">
+                {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(selectedInvoice.total)}
+              </p>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setIsInvoiceModalOpen(false)}>
+                <X className="w-4 h-4 mr-2" />
+                Tutup
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
     </AdminLayout>
   );
 }

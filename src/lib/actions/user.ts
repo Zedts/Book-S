@@ -3,9 +3,9 @@
 import { prisma } from '@/src/lib/prisma';
 import { getSession } from '@/src/lib/auth';
 import { revalidatePath } from 'next/cache';
-import fs from 'fs/promises';
-import path from 'path';
 import bcrypt from 'bcryptjs';
+import { savePublicFile } from '../upload';
+
 import type { UserProfile, UserItem } from '@/src/types/user';
 
 /**
@@ -108,14 +108,7 @@ export async function updateAvatar(formData: FormData) {
         return { success: false, message: "Ukuran file tidak boleh lebih dari 2MB" };
       }
       
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const filename = `${session.id}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "")}`;
-      // Tempat penyimpanan file: public/pfp/
-      const uploadDir = path.join(process.cwd(), "public", "pfp");
-      
-      // Simpan file
-      await fs.writeFile(path.join(uploadDir, filename), buffer);
-      finalAvatarUrl = `/pfp/${filename}`;
+      finalAvatarUrl = await savePublicFile(file, 'pfp', session.id);
     } else if (urlInput && urlInput.trim() !== '') {
       // Menggunakan URL direct if no file
       finalAvatarUrl = urlInput.trim();
@@ -335,3 +328,86 @@ export async function deleteUser(id: string) {
   }
 }
 
+
+/**
+ * Admin: Membuat pengguna baru
+ */
+
+export async function createUser(data: { fullName: string; email: string; role: string; password?: string }) {
+  try {
+    const session = await getSession();
+    if (!session?.id || session.role !== 'admin') {
+      return { success: false, message: "Unauthorized" };
+    }
+
+    if (!data.fullName || !data.email || !data.role) {
+      return { success: false, message: "Nama, Email, dan Peran (Role) wajib diisi." };
+    }
+
+    const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
+    if (existingUser) {
+      return { success: false, message: "Email ini sudah digunakan oleh pengguna lain." };
+    }
+
+    // Default password 'password123' if not provided
+    const rawPass = data.password && data.password.trim() !== '' ? data.password : 'password123';
+    const hashedPassword = await bcrypt.hash(rawPass, 10);
+
+    await prisma.user.create({
+      data: {
+        fullName: data.fullName,
+        email: data.email,
+        role: data.role,
+        password: hashedPassword,
+        phone: '', // required by schema, putting empty default
+      }
+    });
+
+    revalidatePath('/admin/users');
+    return { success: true, message: "Pengguna berhasil ditambahkan." };
+  } catch (error) {
+    console.error('Create User Error:', error);
+    return { success: false, message: "Gagal menambahkan pengguna baru." };
+  }
+}
+
+/**
+ * Admin: Mengubah data pengguna yang ada (Name, Email, Role)
+ */
+export async function updateUser(id: string, data: { fullName: string; email: string; role: string }) {
+  try {
+    const session = await getSession();
+    if (!session?.id || session.role !== 'admin') {
+      return { success: false, message: "Unauthorized" };
+    }
+
+    if (!data.fullName || !data.email || !data.role) {
+      return { success: false, message: "Nama, Email, dan Peran (Role) wajib diisi." };
+    }
+
+    const targetUser = await prisma.user.findUnique({ where: { id } });
+    if (!targetUser) return { success: false, message: "Pengguna tidak ditemukan." };
+
+    if (data.email !== targetUser.email) {
+      const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
+      if (existingUser) {
+        return { success: false, message: "Email ini sudah digunakan oleh akun lain." };
+      }
+    }
+
+    await prisma.user.update({
+      where: { id },
+      data: {
+        fullName: data.fullName,
+        email: data.email,
+        role: data.role,
+      }
+    });
+
+    revalidatePath('/admin/users');
+    return { success: true, message: "Data pengguna berhasil diperbarui." };
+  } catch (error) {
+    console.error('Update User Error:', error);
+    return { success: false, message: "Gagal memperbarui data pengguna." };
+  }
+}

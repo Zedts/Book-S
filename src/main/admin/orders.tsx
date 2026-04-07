@@ -100,8 +100,8 @@ export default function AdminOrders() {
         </div>
 
         {/* Toolbar */}
-        <GlassCard className="p-4 flex gap-4">
-          <div className="flex-1 relative">
+        <GlassCard className="p-4 w-full">
+          <div className="relative w-full">
             <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="text"
