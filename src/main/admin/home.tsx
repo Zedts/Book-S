@@ -7,6 +7,7 @@ import { Button } from "@/src/components/ui/Button";
 import { GlassCard } from "@/src/components/ui/GlassCard";
 import { useRequireRole } from "@/src/hooks/useRequireRole";
 import AdminLayout from "@/src/components/layout/AdminLayout";
+import AdminReportModal from "@/src/components/ui/AdminReportModal";
 import { cn, formatCurrency } from "@/src/lib/utils";
 import { getAllOrders, getOrderStats } from "@/src/lib/actions/order";
 import { getBooks, getTopBooks } from "@/src/lib/actions/book";
@@ -25,9 +26,11 @@ export default function AdminHome() {
   const { loading: authLoading } = useRequireRole('admin');
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<OrderStats | null>(null);
+  const [allOrders, setAllOrders] = useState<OrderItem[]>([]);
   const [recentOrders, setRecentOrders] = useState<OrderItem[]>([]);
   const [totalBooks, setTotalBooks] = useState(0);
   const [topBooks, setTopBooks] = useState<TopBookItem[]>([]);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +44,7 @@ export default function AdminHome() {
         
         setStats(statsData);
         if (Array.isArray(ordersData)) {
+          setAllOrders(ordersData as unknown as OrderItem[]);
           setRecentOrders((ordersData as unknown as OrderItem[]).slice(0, 5));
         }
         if (Array.isArray(booksData)) {
@@ -83,7 +87,7 @@ export default function AdminHome() {
             <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Ringkasan Admin</h1>
             <p className="text-slate-500 mt-1">Pantau aktivitas toko dan kinerja penjualan real-time.</p>
           </div>
-          <Button variant="primary" className="shrink-0 gap-2 shadow-lg">
+          <Button variant="primary" className="shrink-0 gap-2 shadow-lg" onClick={() => setIsReportModalOpen(true)}>
             <ArrowUpRight className="w-4 h-4" />
             Unduh Laporan
           </Button>
@@ -204,6 +208,13 @@ export default function AdminHome() {
           </div>
         </div>
       </div>
+
+      <AdminReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        orders={allOrders}
+        stats={stats}
+      />
     </AdminLayout>
   );
 }
