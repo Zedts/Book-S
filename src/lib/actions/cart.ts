@@ -232,7 +232,7 @@ export async function processCheckout(itemIds: string[], paymentMethod: string) 
           total: total,
           status: "pending",
           paymentMethod: paymentMethod,
-          paymentStatus: "unpaid",
+          paymentStatus: "Unchecked",
           orderItems: {
             create: cartItems.map(item => ({
               bookId: item.bookId,

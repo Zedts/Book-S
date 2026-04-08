@@ -1,14 +1,19 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useEffect, useState } from "react";
-import { BookOpen, CheckCircle, Clock } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { BookOpen, CheckCircle, Clock, ShoppingBag } from "lucide-react";
 import UserLayout from "@/src/components/layout/UserLayout";
 import BookCardHorizontal from "@/src/components/user/BookCardHorizontal";      
-import { useRequireRole } from "@/src/hooks/useRequireRole";
-import { getUserProgress } from "@/src/lib/actions/progress";
+import { useUserOrders } from "@/src/hooks/useUserOrders";
+import { formatCurrency } from "@/src/lib/utils";
+import Modal from "@/src/components/ui/Modal";
+import { Button } from "@/src/components/ui/Button";
 import { ProgressModal } from "@/src/components/user/ProgressModal";
 import { RatingModal } from "@/src/components/user/RatingModal";
 import type { Book } from "@/src/types/landing";
+import type { OrderItem } from "@/src/types/order";
 
 type UserBookProgressData = {
   id: string;
@@ -18,30 +23,30 @@ type UserBookProgressData = {
 };
 
 export default function UserMyBooks() {
-  const { user } = useRequireRole("users");
-  const [progresses, setProgresses] = useState<UserBookProgressData[]>([]);     
-  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+  const { 
+    user,
+    orders,
+    progresses,
+    loading: isLoading,
+    refreshData
+  } = useUserOrders();
+
   const [selectedProgress, setSelectedProgress] = useState<UserBookProgressData | null>(null);
   const [selectedRatingBook, setSelectedRatingBook] = useState<{ id: string; title: string } | null>(null);
-
-  const fetchProgresses = async () => {
-    setIsLoading(true);
-    const res = await getUserProgress();
-    if (res.success && res.data) {
-      setProgresses(res.data as UserBookProgressData[]);
-    }
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (user) fetchProgresses();
-  }, [user]);
+  const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
 
   if (!user) return null;
 
-  const readingBooks = progresses.filter((p) => p.status === "reading");        
-  const completedBooks = progresses.filter((p) => p.status === "completed");    
+  const pendingOrders = orders.filter(o => o.status === 'pending' || o.status === 'processing');
+
+  // Filter buku yang sedang pending / processing
+  const pendingBookIds = new Set(
+    pendingOrders.flatMap(order => order.orderItems.map(item => item.book.id))
+  );
+
+  const readingBooks = (progresses as UserBookProgressData[]).filter((p) => p.status === "reading" && !pendingBookIds.has(p.book.id));        
+  const completedBooks = (progresses as UserBookProgressData[]).filter((p) => p.status === "completed" && !pendingBookIds.has(p.book.id));    
 
   return (
     <UserLayout>
@@ -66,6 +71,45 @@ export default function UserMyBooks() {
            </div>
         ) : (
           <>
+            {/* Menunggu Konfirmasi */}
+            <section className="space-y-6 reveal">
+              <div className="flex items-center gap-2 text-amber-600">
+                <ShoppingBag className="w-6 h-6" />
+                <h2 className="text-2xl font-bold">Menunggu Konfirmasi</h2>
+              </div>
+
+              {pendingOrders.length > 0 ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {pendingOrders.map((order) => (
+                    <div 
+                      key={order.id} 
+                      className="bg-white rounded-2xl border border-slate-200/60 p-6 flex flex-col md:flex-row justify-between items-start md:items-center shadow-sm hover:border-amber-300 transition-colors gap-4"
+                    >
+                      <div>
+                        <span className="inline-block px-2.5 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full uppercase mb-2">
+                          {order.status}
+                        </span>
+                        <h3 className="font-bold text-slate-800 text-lg">Pesanan {order.id.slice(0, 8).toUpperCase()}</h3>
+                        <p className="text-sm text-slate-500">{new Date(order.createdAt).toLocaleDateString("id-ID", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}</p>
+                        <p className="text-slate-700 font-semibold mt-1 text-sm">{order.orderItems.length} Buku &bull; {formatCurrency(order.total)}</p>
+                      </div>
+                      
+                      <button 
+                        onClick={() => setSelectedOrder(order)}
+                        className="px-5 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-700 font-semibold rounded-xl transition-colors w-full md:w-auto"
+                      >
+                        Lihat Detail
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-3xl">
+                  <p className="text-slate-500 font-medium">Tidak ada pesanan yang sedang menunggu konfirmasi.</p>
+                </div>
+              )}
+            </section>
+
             {/* Currently Reading */}
             <section className="space-y-6 reveal stagger-1">
               <div className="flex items-center gap-2 text-indigo-600">
@@ -141,6 +185,79 @@ export default function UserMyBooks() {
 
       </div>
 
+      {selectedOrder && (
+        <Modal 
+          isOpen={true} 
+          onClose={() => setSelectedOrder(null)}
+          title="Detail Pesanan (Invoice)"
+          size="md"
+        >
+          <div className="space-y-6">
+            <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <div>
+                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">ID Pesanan</p>
+                <p className="font-mono font-bold text-slate-800 text-lg">{selectedOrder.id.slice(0, 8).toUpperCase()}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Status</p>
+                <span className="inline-block bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full uppercase">
+                  {selectedOrder.status}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-slate-800 border-b border-slate-200 pb-3 mb-4">Daftar Buku</h4>
+              <ul className="space-y-4">
+                {selectedOrder.orderItems.map((item, idx) => (
+                  <li key={idx} className="flex gap-4">
+                    <img 
+                      src={item.book.imageUrl || '/placeholder-book.jpg'} 
+                      alt={item.book.title} 
+                      className="w-12 h-16 object-cover rounded-md border border-slate-200/60" 
+                    />
+                    <div className="flex-1">
+                      <p className="font-bold text-slate-800">{item.book.title}</p>
+                      <p className="text-xs text-slate-500 mb-1">{item.book.author}</p>
+                      <p className="font-semibold text-slate-700"><span className="text-slate-400">1x</span> {formatCurrency(item.price)}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="border-t border-slate-200 pt-4">
+              <div className="flex justify-between items-center text-sm font-semibold text-slate-600 mb-2">
+                <span>Metode Pembayaran</span>
+                <span>{selectedOrder.paymentMethod}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm font-semibold text-slate-600 mb-4">
+                <span>Status Pembayaran</span>
+                <span className={selectedOrder.paymentStatus === 'paid' ? "text-emerald-600 uppercase" : "text-amber-600 uppercase"}>
+                  {selectedOrder.paymentStatus}
+                </span>
+              </div>
+              <div className="flex flex-col gap-2 p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-indigo-900">Total Harga</span>
+                  <span className="text-xl font-black text-indigo-700">{formatCurrency(selectedOrder.total)}</span>
+                </div>
+              </div>
+              <Button 
+                variant="primary" 
+                className="w-full mt-4 justify-center" 
+                onClick={() => {
+                  setSelectedOrder(null);
+                  router.push('/user/cart');
+                }}
+              >
+                Lihat Pesanan
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
       {selectedProgress && (
         <ProgressModal
           isOpen={true}
@@ -149,7 +266,7 @@ export default function UserMyBooks() {
           bookTitle={selectedProgress.book.title}
           initialStatus={selectedProgress.status}
           initialProgress={selectedProgress.progress}
-          onUpdateSuccess={fetchProgresses}
+          onUpdateSuccess={refreshData}
         />
       )}
       {selectedRatingBook && (

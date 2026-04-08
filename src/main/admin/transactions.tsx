@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -5,30 +6,15 @@ import AdminLayout from "@/src/components/layout/AdminLayout";
 import { GlassCard } from "@/src/components/ui/GlassCard";
 import { Button } from "@/src/components/ui/Button";
 import Modal from "@/src/components/ui/Modal";
-import { Search, Loader2, ArrowUpRight, DollarSign, ShoppingBag, Clock, FileText, CheckCircle2, XCircle, Receipt, X } from "lucide-react";
+import { Search, Loader2, ArrowUpRight, DollarSign, ShoppingBag, Clock, FileText, Receipt, X } from "lucide-react";
 import { getAllOrders, getOrderStats } from "@/src/lib/actions/order";
+import { formatCurrency } from "@/src/lib/utils";
 
-type OrderItem = {
-  id: string;
-  total: number;
-  status: string;
-  paymentMethod: string;
-  paymentStatus: string;
-  createdAt: Date;
-  user: {
-    fullName: string;
-    email: string;
-  };
-  orderItems: {
-    book: { title: string };
-  }[];
-};
+import { AdminPageHeader } from "@/src/components/admin/AdminPageHeader";
+import { AdminSearchToolbar } from "@/src/components/admin/AdminSearchToolbar";
+import { AdminStatusBadge } from "@/src/components/admin/AdminStatusBadge";
 
-type OrderStats = {
-  totalOrders: number;
-  totalRevenue: number;
-  pendingOrders: number;
-};
+import type { OrderItem, OrderStats } from "@/src/types/order";
 
 export default function AdminTransactions() {
   const [orders, setOrders] = useState<OrderItem[]>([]);
@@ -63,24 +49,6 @@ export default function AdminTransactions() {
     fetchData();
   }, []);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed": return "bg-emerald-50 text-emerald-600 border-emerald-200";
-      case "processing": return "bg-blue-50 text-blue-600 border-blue-200";
-      case "cancelled": return "bg-rose-50 text-rose-600 border-rose-200";
-      default: return "bg-amber-50 text-amber-600 border-amber-200";
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "completed": return <CheckCircle2 className="w-3.5 h-3.5" />;
-      case "cancelled": return <XCircle className="w-3.5 h-3.5" />;
-      case "processing": return <Clock className="w-3.5 h-3.5" />;
-      default: return <Clock className="w-3.5 h-3.5" />;
-    }
-  };
-
   const filteredOrders = orders.filter((order) =>
     order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     order.user.fullName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -89,81 +57,44 @@ export default function AdminTransactions() {
   return (
     <AdminLayout>
       <div className="space-y-8 pb-12 reveal active">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Pantau Transaksi</h1>
-            <p className="text-slate-500 mt-1">Lacak dan kelola semua transaksi dari pelanggan.</p>
-          </div>
-        </div>
+        <AdminPageHeader 
+          title="Pantau Transaksi" 
+          description="Lacak dan kelola semua transaksi dari pelanggan."
+        />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <GlassCard className="p-6 relative overflow-hidden group">
-            <div className="absolute -right-6 -top-6 w-24 h-24 bg-emerald-500/10 rounded-full group-hover:scale-150 transition-transform duration-500 blur-2xl" />
-            <div className="flex items-center justify-between mb-4 relative">
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
-                <DollarSign className="w-6 h-6" />
-              </div>
-              <span className="flex items-center text-sm font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
-                <ArrowUpRight className="w-3 h-3 mr-1" />
-                Total Pendapatan
-              </span>
-            </div>
-            <div className="relative">
-              <h3 className="text-3xl font-bold text-slate-800">
-                {stats ? new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(stats.totalRevenue) : "Rp0"}
-              </h3>
-              <p className="text-slate-500 text-sm mt-1">Total revenue pesanan selesai</p>
-            </div>
-          </GlassCard>
-
-          <GlassCard className="p-6 relative overflow-hidden group">
-            <div className="absolute -right-6 -top-6 w-24 h-24 bg-indigo-500/10 rounded-full group-hover:scale-150 transition-transform duration-500 blur-2xl" />
-            <div className="flex items-center justify-between mb-4 relative">
-              <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
-                <ShoppingBag className="w-6 h-6" />
-              </div>
-            </div>
-            <div className="relative">
-              <h3 className="text-3xl font-bold text-slate-800">
-                {stats ? stats.totalOrders : 0}
-              </h3>
-              <p className="text-slate-500 text-sm mt-1">Total pesanan dibuat</p>
-            </div>
-          </GlassCard>
-
-          <GlassCard className="p-6 relative overflow-hidden group">
-            <div className="absolute -right-6 -top-6 w-24 h-24 bg-amber-500/10 rounded-full group-hover:scale-150 transition-transform duration-500 blur-2xl" />
-            <div className="flex items-center justify-between mb-4 relative">
-              <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
-                <Clock className="w-6 h-6" />
-              </div>
-            </div>
-            <div className="relative">
-              <h3 className="text-3xl font-bold text-slate-800">
-                {stats ? stats.pendingOrders : 0}
-              </h3>
-              <p className="text-slate-500 text-sm mt-1">Pesanan menunggu diproses</p>
-            </div>
-          </GlassCard>
+          <StatCard 
+            title="Total Pendapatan"
+            value={stats ? formatCurrency(stats.totalRevenue) : "Rp0"}
+            subtitle="Total revenue pesanan selesai"
+            icon={<DollarSign className="w-6 h-6" />}
+            color="emerald"
+            trend={<ArrowUpRight className="w-3 h-3 mr-1" />}
+          />
+          <StatCard 
+            title="Total Pesanan"
+            value={stats ? stats.totalOrders.toString() : "0"}
+            subtitle="Total pesanan dibuat"
+            icon={<ShoppingBag className="w-6 h-6" />}
+            color="indigo"
+          />
+          <StatCard 
+            title="Pesanan Pending"
+            value={stats ? stats.pendingOrders.toString() : "0"}
+            subtitle="Pesanan menunggu diproses"
+            icon={<Clock className="w-6 h-6" />}
+            color="amber"
+          />
         </div>
 
-        {/* Toolbar */}
-        <GlassCard className="p-4 w-full">
-          <div className="relative w-full">
-            <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Cari ID pesanan atau nama pelanggan..."
-              className="w-full pl-12 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-800 focus:border-transparent outline-none transition-all"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </GlassCard>
+        <AdminSearchToolbar 
+          placeholder="Cari ID pesanan atau nama pelanggan..."
+          value={searchQuery}
+          onChange={setSearchQuery}
+        />
 
-        {/* Content */}
+        {/* Content Table */}
         <GlassCard className="overflow-hidden">
           <div className="overflow-x-auto no-scrollbar">
             {loading ? (
@@ -202,7 +133,7 @@ export default function AdminTransactions() {
                         <div className="font-bold text-slate-800">{order.user.fullName}</div>
                         <div className="text-xs text-slate-500 mt-0.5">{order.user.email}</div>
                       </td>
-                      <td className="px-6 py-4 text-slate-500">
+                      <td className="px-6 py-4 text-slate-500 font-medium">
                         {new Date(order.createdAt).toLocaleDateString("id-ID", {
                           day: "numeric",
                           month: "short",
@@ -210,23 +141,16 @@ export default function AdminTransactions() {
                         })}
                       </td>
                       <td className="px-6 py-4 font-bold text-slate-800">
-                        {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(order.total)}
+                        {formatCurrency(order.total)}
                       </td>
-                      <td className="px-6 py-4 text-slate-600">
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <span className="capitalize">{order.paymentMethod}</span>
-                          {order.paymentStatus === "paid" ? (
-                            <span className="inline-flex px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-700">PAID</span>
-                          ) : (
-                            <span className="inline-flex px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 text-slate-600">UNPAID</span>
-                          )}
+                          <span className="capitalize text-slate-600 font-medium">{order.paymentMethod}</span>
+                          <AdminStatusBadge status={order.paymentStatus} type="payment" size="sm" />
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border ${getStatusColor(order.status)}`}>
-                          {getStatusIcon(order.status)}
-                          <span className="capitalize">{order.status}</span>
-                        </div>
+                        <AdminStatusBadge status={order.status} size="sm" />
                       </td>
                       <td className="px-6 py-4 text-right">
                         <button
@@ -285,6 +209,7 @@ export default function AdminTransactions() {
                 {selectedInvoice.orderItems.map((item, idx) => (
                   <div key={idx} className="flex justify-between p-3 items-center">
                     <p className="font-medium text-slate-700">{item.book.title}</p>
+                    <p className="text-slate-400 font-medium">{formatCurrency(item.price)}</p>
                   </div>
                 ))}
               </div>
@@ -297,15 +222,11 @@ export default function AdminTransactions() {
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700 uppercase">
                     {selectedInvoice.paymentMethod}
                   </span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
-                    selectedInvoice.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {selectedInvoice.paymentStatus}
-                  </span>
+                  <AdminStatusBadge status={selectedInvoice.paymentStatus} type="payment" size="sm" />
                 </div>
               </div>
               <p className="text-2xl font-black text-slate-800">
-                {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(selectedInvoice.total)}
+                {formatCurrency(selectedInvoice.total)}
               </p>
             </div>
 
@@ -320,5 +241,40 @@ export default function AdminTransactions() {
       </Modal>
 
     </AdminLayout>
+  );
+}
+
+function StatCard({ title, value, subtitle, icon, color, trend }: any) {
+  const colorClasses: any = {
+    emerald: "bg-emerald-500/10 text-emerald-600 bg-emerald-50 border-emerald-100",
+    indigo: "bg-indigo-500/10 text-indigo-600 bg-indigo-50 border-indigo-100",
+    amber: "bg-amber-500/10 text-amber-600 bg-amber-50 border-amber-100"
+  };
+
+  const blurClasses: any = {
+    emerald: "bg-emerald-500/10",
+    indigo: "bg-indigo-500/10",
+    amber: "bg-amber-500/10"
+  };
+
+  return (
+    <GlassCard className="p-6 relative overflow-hidden group">
+      <div className={`absolute -right-6 -top-6 w-24 h-24 ${blurClasses[color]} rounded-full group-hover:scale-150 transition-transform duration-500 blur-2xl`} />
+      <div className="flex items-center justify-between mb-4 relative">
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${colorClasses[color]}`}>
+          {icon}
+        </div>
+        {trend && (
+          <span className={`flex items-center text-sm font-medium ${colorClasses[color]} px-2 py-1 rounded-full`}>
+            {trend}
+            {title}
+          </span>
+        )}
+      </div>
+      <div className="relative">
+        <h3 className="text-3xl font-bold text-slate-800">{value}</h3>
+        <p className="text-slate-500 text-sm mt-1">{subtitle}</p>
+      </div>
+    </GlassCard>
   );
 }

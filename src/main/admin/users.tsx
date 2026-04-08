@@ -4,10 +4,16 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/src/components/layout/AdminLayout";
 import { GlassCard } from "@/src/components/ui/GlassCard";
-import { Search, Trash2, Loader2, Users, User, Mail, Calendar, ShieldCheck, Edit2, Plus, AlertCircle } from "lucide-react";
+import { Trash2, Loader2, Users, User, Mail, Calendar, Edit2 } from "lucide-react";
 import { getAllUsers, deleteUser, createUser, updateUser } from "@/src/lib/actions/user";
-import Modal from "@/src/components/ui/Modal";
 import Notification from "@/src/components/ui/Notification";
+import { useNotification } from "@/src/hooks/useNotification";
+
+import { AdminPageHeader } from "@/src/components/admin/AdminPageHeader";
+import { AdminSearchToolbar } from "@/src/components/admin/AdminSearchToolbar";
+import { AdminStatusBadge } from "@/src/components/admin/AdminStatusBadge";
+import { AdminDeleteConfirmModal } from "@/src/components/admin/AdminDeleteConfirmModal";
+import { UserFormModal } from "@/src/components/admin/UserFormModal";
 
 import type { UserItem } from "@/src/types/user";
 
@@ -16,30 +22,21 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Notification State
-  const [notification, setNotification] = useState<{ isOpen: boolean; message: string; type: "success" | "error" }>({
-    isOpen: false,
-    message: "",
-    type: "success"
-  });
+  const { 
+    isOpen: notifOpen, 
+    message: notifMessage, 
+    type: notifType, 
+    showNotification, 
+    onClose: hideNotif 
+  } = useNotification();
 
-  const showNotification = (message: string, type: "success" | "error" = "success") => {
-    setNotification({ isOpen: true, message, type });
-  };
-
-  // Select User for Edit/Delete
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
-
-  // Add/Edit Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Delete Modal State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Form State
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -78,15 +75,6 @@ export default function AdminUsers() {
     setIsModalOpen(true);
   };
 
-  const openDeleteModal = (user: UserItem) => {
-    if (user.role === "admin") {
-      showNotification("Anda tidak dapat menghapus sesama admin.", "error");
-      return;
-    }
-    setSelectedUser(user);
-    setIsDeleteModalOpen(true);
-  };
-
   const handleModalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -116,14 +104,14 @@ export default function AdminUsers() {
 
         if (res.success) {
           showNotification(res.message, "success");
-          fetchUsers(); // Re-fetch to get new user with correct ID and dates
+          fetchUsers();
           setIsModalOpen(false);
         } else {
           showNotification(res.message, "error");
         }
       }
     } catch (error) {
-      console.error("Submit Error:", error);
+      console.error(error);
       showNotification("Terjadi kesalahan sistem.", "error");
     } finally {
       setIsSubmitting(false);
@@ -144,7 +132,7 @@ export default function AdminUsers() {
         showNotification(res.message, "error");
       }
     } catch (error) {
-      console.error("Delete Error:", error);
+      console.error(error);
       showNotification("Terjadi kesalahan sistem saat menghapus pengguna.", "error");
     } finally {
       setIsDeleting(false);
@@ -160,36 +148,19 @@ export default function AdminUsers() {
   return (
     <AdminLayout>
       <div className="space-y-8 pb-12 reveal active">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Kelola Pengguna</h1>
-            <p className="text-slate-500 mt-1">Daftar pengguna terdaftar di sistem.</p>
-          </div>
-          <button 
-            onClick={openAddModal}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-800 text-white font-medium rounded-xl hover:bg-slate-900 transition-colors shadow-sm"
-          >
-            <Plus className="w-5 h-5" />
-            Tambah Pengguna
-          </button>
-        </div>
+        <AdminPageHeader 
+          title="Kelola Pengguna" 
+          description="Daftar pengguna terdaftar di sistem."
+          actionLabel="Tambah Pengguna"
+          onActionClick={openAddModal}
+        />
 
-        {/* Toolbar */}
-        <GlassCard className="p-4">
-          <div className="w-full relative">
-            <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Cari nama atau email pengguna..."
-              className="w-full pl-12 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-800 focus:border-transparent outline-none transition-all"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </GlassCard>
+        <AdminSearchToolbar 
+          placeholder="Cari nama atau email pengguna..."
+          value={searchQuery}
+          onChange={setSearchQuery}
+        />
 
-        {/* Content */}
         <GlassCard className="overflow-hidden">
           <div className="overflow-x-auto no-scrollbar">
             {loading ? (
@@ -237,20 +208,10 @@ export default function AdminUsers() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        {user.role === "admin" ? (
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200/50">
-                            <ShieldCheck className="w-3.5 h-3.5" />
-                            Administrator
-                          </div>
-                        ) : (
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-600 border border-slate-200/50">
-                            <User className="w-3.5 h-3.5" />
-                            Customer
-                          </div>
-                        )}
+                        <AdminStatusBadge status={user.role} type="role" size="sm" />
                       </td>
                       <td className="px-6 py-4 text-slate-500">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 font-medium">
                           <Calendar className="w-4 h-4 opacity-70" />
                           {new Date(user.createdAt).toLocaleDateString("id-ID", {
                             day: "numeric",
@@ -270,12 +231,11 @@ export default function AdminUsers() {
                           </button>
                           {user.role !== "admin" && (
                             <button 
-                              onClick={() => openDeleteModal(user)}
-                              disabled={isDeleting && selectedUser?.id === user.id}
-                              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 bg-white rounded-lg shadow-sm border border-slate-200 transition-colors disabled:opacity-50" 
+                              onClick={() => { setSelectedUser(user); setIsDeleteModalOpen(true); }}
+                              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 bg-white rounded-lg shadow-sm border border-slate-200 transition-colors" 
                               title="Hapus Pengguna"
                             >
-                              {isDeleting && selectedUser?.id === user.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           )}
                         </div>
@@ -289,125 +249,31 @@ export default function AdminUsers() {
         </GlassCard>
       </div>
 
-      {/* Add/Edit Modal */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={isEditing ? "Edit Pengguna" : "Tambah Pengguna Baru"}>
-        <form onSubmit={handleModalSubmit} className="p-6 space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700">Nama Lengkap</label>
-            <input 
-              type="text" 
-              required
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-transparent transition-all"
-              value={formData.fullName}
-              onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-              placeholder="Masukkan nama pengguna"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700">Email</label>
-            <input 
-              type="email" 
-              required
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-transparent transition-all"
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
-              placeholder="nama@email.com"
-            />
-          </div>
+      <UserFormModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleModalSubmit}
+        isEditing={isEditing}
+        formData={formData}
+        setFormData={setFormData}
+        isSubmitting={isSubmitting}
+      />
 
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700">Role</label>
-            <select 
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-transparent transition-all bg-white"
-              value={formData.role}
-              onChange={(e) => setFormData({...formData, role: e.target.value})}
-            >
-              <option value="customer">Customer</option>
-              <option value="admin">Administrator</option>
-            </select>
-          </div>
+      <AdminDeleteConfirmModal 
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        title="Hapus Pengguna"
+        message="Anda akan menghapus pengguna"
+        itemName={selectedUser?.fullName}
+        isDeleting={isDeleting}
+      />
 
-          {!isEditing && (
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">Password</label>
-              <input 
-                type="text" 
-                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-transparent transition-all"
-                value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
-                placeholder="Kosongkan untuk default: password123"
-              />
-              <p className="text-xs text-slate-500">Jika dibiarkan kosong, password otomatis adalah <strong>password123</strong></p>
-            </div>
-          )}
-
-          <div className="pt-4 flex items-center justify-end gap-3">
-            <button 
-              type="button" 
-              onClick={() => setIsModalOpen(false)}
-              className="px-5 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-xl transition-colors"
-            >
-              Batal
-            </button>
-            <button 
-              type="submit" 
-              disabled={isSubmitting}
-              className="inline-flex items-center gap-2 px-5 py-2 bg-slate-800 text-white font-medium rounded-xl hover:bg-slate-900 transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              {isEditing ? "Simpan Perubahan" : "Tambahkan Pengguna"}
-            </button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Delete Confirmation Modal */}
-      <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Hapus Pengguna" size="sm">
-        <div className="p-6 space-y-4">
-          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-rose-100 text-rose-600 mb-4">
-            <AlertCircle className="w-6 h-6" />
-          </div>
-          <h3 className="text-lg font-bold text-slate-800">Apakah Anda yakin?</h3>
-          <p className="text-slate-600">
-            Anda akan menghapus pengguna <span className="font-semibold text-slate-800">{selectedUser?.fullName}</span>. 
-            Semua data terkait pengguna tersebut mungkin akan terpengaruh.
-            Tindakan ini tidak dapat dibatalkan.
-          </p>
-
-          <div className="pt-4 flex items-center justify-end gap-3 mt-6">
-            <button 
-              type="button" 
-              onClick={() => setIsDeleteModalOpen(false)}
-              className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-100 rounded-xl transition-colors"
-            >
-              Batal
-            </button>
-            <button 
-              type="button" 
-              onClick={confirmDelete}
-              disabled={isDeleting}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-rose-600 text-white font-medium rounded-xl hover:bg-rose-700 transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Menghapus...
-                </>
-              ) : (
-                "Ya, Hapus Pengguna"
-              )}
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Notification Toast */}
       <Notification 
-        isOpen={notification.isOpen}
-        message={notification.message}
-        type={notification.type}
-        onClose={() => setNotification({ ...notification, isOpen: false })}
+        isOpen={notifOpen}
+        message={notifMessage}
+        type={notifType}
+        onClose={hideNotif}
       />
     </AdminLayout>
   );

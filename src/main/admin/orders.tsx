@@ -1,32 +1,35 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useState } from "react";
 import AdminLayout from "@/src/components/layout/AdminLayout";
 import { GlassCard } from "@/src/components/ui/GlassCard";
-import { Search, Loader2, FileText, CheckCircle2, Clock, XCircle, ArrowRight } from "lucide-react";
+import { Loader2, FileText, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
 import { getAllOrders, updateOrderStatus } from "@/src/lib/actions/order";
+import { formatCurrency } from "@/src/lib/utils";
+import Notification from "@/src/components/ui/Notification";
+import { useNotification } from "@/src/hooks/useNotification";
 
-type OrderItem = {
-  id: string;
-  total: number;
-  status: string;
-  paymentMethod: string;
-  paymentStatus: string;
-  createdAt: Date;
-  user: {
-    fullName: string;
-    email: string;
-  };
-  orderItems: {
-    book: { title: string };
-  }[];
-};
+import { AdminPageHeader } from "@/src/components/admin/AdminPageHeader";
+import { AdminSearchToolbar } from "@/src/components/admin/AdminSearchToolbar";
+import { AdminStatusBadge } from "@/src/components/admin/AdminStatusBadge";
+
+import type { OrderItem } from "@/src/types/order";
+import { ORDER_STATUS, PAYMENT_STATUS } from "@/src/lib/constants";
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  const { 
+    isOpen: notifOpen, 
+    message: notifMessage, 
+    type: notifType, 
+    showNotification, 
+    onClose: hideNotif 
+  } = useNotification();
 
   const fetchOrders = async () => {
     try {
@@ -50,16 +53,18 @@ export default function AdminOrders() {
     try {
       const res = await updateOrderStatus(orderId, newStatus, paymentStatus);
       if (res.success) {
+        showNotification(res.message, "success");
         setOrders(orders.map(o => 
           o.id === orderId 
-            ? { ...o, status: newStatus, paymentStatus: paymentStatus || o.paymentStatus } 
+            ? { ...o, status: newStatus as any, paymentStatus: (paymentStatus || o.paymentStatus) as any } 
             : o
         ));
       } else {
-        alert(res.message);
+        showNotification(res.message, "error");
       }
     } catch (error) {
       console.error(error);
+      showNotification("Terjadi kesalahan sistem.", "error");
     } finally {
       setUpdatingId(null);
     }
@@ -70,50 +75,20 @@ export default function AdminOrders() {
     order.user.fullName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed": return "bg-emerald-50 text-emerald-600 border-emerald-200";
-      case "processing": return "bg-blue-50 text-blue-600 border-blue-200";
-      case "cancelled": return "bg-rose-50 text-rose-600 border-rose-200";
-      default: return "bg-amber-50 text-amber-600 border-amber-200";
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "completed": return <CheckCircle2 className="w-3.5 h-3.5" />;
-      case "cancelled": return <XCircle className="w-3.5 h-3.5" />;
-      case "processing": return <Loader2 className="w-3.5 h-3.5 animate-spin" />;
-      default: return <Clock className="w-3.5 h-3.5" />;
-    }
-  };
-
   return (
     <AdminLayout>
       <div className="space-y-8 pb-12 reveal active">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800 tracking-tight">List Pesanan</h1>
-            <p className="text-slate-500 mt-1">Kelola dan perbarui status pesanan pelanggan.</p>
-          </div>
-        </div>
+        <AdminPageHeader 
+          title="List Pesanan" 
+          description="Kelola dan perbarui status pesanan pelanggan."
+        />
 
-        {/* Toolbar */}
-        <GlassCard className="p-4 w-full">
-          <div className="relative w-full">
-            <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Cari ID pesanan atau nama pelanggan..."
-              className="w-full pl-12 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-800 focus:border-transparent outline-none transition-all"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </GlassCard>
+        <AdminSearchToolbar 
+          placeholder="Cari ID pesanan atau nama pelanggan..."
+          value={searchQuery}
+          onChange={setSearchQuery}
+        />
 
-        {/* Content */}
         <div className="grid gap-6">
           {loading ? (
             <GlassCard className="flex flex-col items-center justify-center min-h-[300px] text-slate-400">
@@ -132,21 +107,13 @@ export default function AdminOrders() {
             filteredOrders.map(order => (
               <GlassCard key={order.id} className="p-6 overflow-hidden">
                 <div className="flex flex-col lg:flex-row justify-between gap-6">
-                  {/* Order Details Info */}
                   <div className="flex-1 space-y-4">
                     <div className="flex items-center gap-3">
                       <span className="font-mono text-sm font-bold border border-slate-200 bg-slate-50 px-2 py-1 rounded-md text-slate-600">
                         #{order.id.slice(0, 8).toUpperCase()}
                       </span>
-                      <div className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(order.status)}`}>
-                        {getStatusIcon(order.status)}
-                        <span className="capitalize">{order.status}</span>
-                      </div>
-                      {order.paymentStatus === "paid" ? (
-                        <span className="inline-flex px-2 py-1 text-[10px] font-bold rounded bg-emerald-100 text-emerald-700 uppercase">Paid</span>
-                      ) : (
-                        <span className="inline-flex px-2 py-1 text-[10px] font-bold rounded bg-slate-100 text-slate-600 uppercase">Unpaid</span>
-                      )}
+                      <AdminStatusBadge status={order.status} size="sm" />
+                      <AdminStatusBadge status={order.paymentStatus} type="payment" size="sm" />
                     </div>
                     
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 border-t border-slate-100 pt-4">
@@ -157,9 +124,7 @@ export default function AdminOrders() {
                       </div>
                       <div>
                         <p className="text-xs text-slate-400 font-medium tracking-wide uppercase">Total</p>
-                        <p className="font-bold text-slate-800 mt-1">
-                          {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(order.total)}
-                        </p>
+                        <p className="font-bold text-slate-800 mt-1">{formatCurrency(order.total)}</p>
                         <p className="text-xs text-slate-500 capitalize">{order.paymentMethod}</p>
                       </div>
                       <div>
@@ -185,15 +150,14 @@ export default function AdminOrders() {
                     </div>
                   </div>
 
-                  {/* Actions Panel */}
                   <div className="lg:w-64 flex flex-col gap-3 lg:border-l lg:border-slate-100 lg:pl-6">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Aksi Cepat</p>
                     
-                    {order.status === "pending" && (
+                    {order.status === ORDER_STATUS.PENDING && (
                       <>
                         <button 
                           disabled={updatingId === order.id}
-                          onClick={() => handleUpdateStatus(order.id, "processing", "paid")}
+                          onClick={() => handleUpdateStatus(order.id, ORDER_STATUS.PROCESSING, PAYMENT_STATUS.PAID)}
                           className="flex items-center justify-between w-full p-3 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors border border-blue-200 disabled:opacity-50"
                         >
                           <span className="font-semibold text-sm">Proses Pesanan</span>
@@ -201,7 +165,7 @@ export default function AdminOrders() {
                         </button>
                         <button 
                           disabled={updatingId === order.id}
-                          onClick={() => handleUpdateStatus(order.id, "cancelled")}
+                          onClick={() => handleUpdateStatus(order.id, ORDER_STATUS.CANCELLED)}
                           className="w-full py-2.5 rounded-xl bg-white text-rose-600 hover:bg-rose-50 transition-colors border border-rose-200 font-medium text-sm disabled:opacity-50"
                         >
                           Batalkan Pesanan
@@ -209,25 +173,25 @@ export default function AdminOrders() {
                       </>
                     )}
 
-                    {order.status === "processing" && (
+                    {order.status === ORDER_STATUS.PROCESSING && (
                       <button 
                         disabled={updatingId === order.id}
-                        onClick={() => handleUpdateStatus(order.id, "completed")}
+                        onClick={() => handleUpdateStatus(order.id, ORDER_STATUS.COMPLETED)}
                         className="flex items-center justify-between w-full p-3 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors border border-emerald-200 disabled:opacity-50"
                       >
                         <span className="font-semibold text-sm">Selesaikan Pesanan</span>
-                        <CheckCircle2 className="w-4 h-4 font-bold" />
+                        <CheckCircle2 className="w-4 h-4" />
                       </button>
                     )}
 
-                    {order.status === "completed" && (
+                    {order.status === ORDER_STATUS.COMPLETED && (
                        <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-emerald-200 rounded-xl bg-emerald-50/50 p-4">
                           <CheckCircle2 className="w-8 h-8 text-emerald-400 mb-2" />
                           <span className="text-sm font-semibold text-emerald-600 text-center">Pesanan Selesai</span>
                        </div>
                     )}
                     
-                    {order.status === "cancelled" && (
+                    {order.status === ORDER_STATUS.CANCELLED && (
                        <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-rose-200 rounded-xl bg-rose-50/50 p-4">
                           <XCircle className="w-8 h-8 text-rose-400 mb-2" />
                           <span className="text-sm font-semibold text-rose-600 text-center">Pesanan Dibatalkan</span>
@@ -240,6 +204,12 @@ export default function AdminOrders() {
           )}
         </div>
       </div>
+      <Notification 
+        isOpen={notifOpen}
+        message={notifMessage}
+        type={notifType}
+        onClose={hideNotif}
+      />
     </AdminLayout>
   );
 }

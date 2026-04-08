@@ -14,6 +14,7 @@ export interface Book {
   description?: string;
   isFeatured?: boolean;
   stock?: number;
+  categoryId?: string;
 }
 
 export interface Category {

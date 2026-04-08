@@ -1,18 +1,22 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { ShoppingCart, ShieldCheck, CreditCard, Wallet, Truck } from "lucide-react";
+import { ShoppingCart, ShieldCheck, CreditCard, Wallet, Truck, PackageCheck } from "lucide-react";
 import UserLayout from "@/src/components/layout/UserLayout";
-import { useRequireRole } from "@/src/hooks/useRequireRole";
 import { useEffect, useState, useCallback } from "react";
 import type { UserProfile } from "@/src/types/user";
-import { getCart, updateCartItemQuantity, removeFromCart, processCheckout } from "@/src/lib/actions/cart";
+import { updateCartItemQuantity, removeFromCart, processCheckout } from "@/src/lib/actions/cart";
 import { verifyPaymentPin, getUserProfile } from "@/src/lib/actions/user";
 import PaymentPinModal from "@/src/components/user/PaymentPinModal";
 import AddressWarningModal from "@/src/components/user/AddressWarningModal";
+import { Button } from "@/src/components/ui/Button";
 import { CartItemCard } from "@/src/components/user/CartItemCard";
 import { formatCurrency } from "@/src/lib/utils";
 import Notification from "@/src/components/ui/Notification";
 import { useNotification } from "@/src/hooks/useNotification";
+import { useUserOrders } from "@/src/hooks/useUserOrders";
+import { OrderHistoryModal } from "@/src/components/user/OrderHistoryModal";
+import { OrderCancelModal } from "@/src/components/user/OrderCancelModal";
 
 type CartItemData = {
   id: string;
@@ -29,12 +33,20 @@ type CartItemData = {
 };
 
 export default function UserCart() {
-  const { user } = useRequireRole("users");
+  const { 
+    user,
+    cartItems: rawCartItems,
+    visibleOrders,
+    loading: ordersLoading,
+    refreshData,
+    clearOrdersBag,
+    cancelOrder: handleCancelOrderAction
+  } = useUserOrders();
+
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  
   const [cartItems, setCartItems] = useState<CartItemData[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(true);
+  const [loadingCart, setLoadingCart] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   // States for Checkout
@@ -42,6 +54,15 @@ export default function UserCart() {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [isAddressWarningOpen, setIsAddressWarningOpen] = useState(false);
+
+  // States for My Orders
+  const [isOrdersModalOpen, setIsOrdersModalOpen] = useState(false);
+  
+  // States for Cancel Confirmation
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [orderToCancelId, setOrderToCancelId] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const { 
     isOpen: notifOpen, 
@@ -51,17 +72,13 @@ export default function UserCart() {
     onClose: hideNotif 
   } = useNotification();
 
-  const fetchCart = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await getCart();
-      if (res.success && res.data) {
-        setCartItems(res.data as CartItemData[]);
-      }
-    } finally {
-      setLoading(false);
+  // Sync cart items from hook
+  useEffect(() => {
+    if (rawCartItems) {
+      setCartItems(rawCartItems as unknown as CartItemData[]);
+      setLoadingCart(false);
     }
-  }, []);
+  }, [rawCartItems]);
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -74,10 +91,9 @@ export default function UserCart() {
 
   useEffect(() => {
     if (user) {
-      fetchCart();
       fetchProfile();
     }
-  }, [user, fetchCart, fetchProfile]);
+  }, [user, fetchProfile]);
 
   const handleUpdateQty = async (id: string, newQty: number) => {
     setUpdatingId(id);
@@ -87,7 +103,7 @@ export default function UserCart() {
       setUpdatingId(null);
       return;
     }
-    setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity: newQty } : item));
+    await refreshData();
     setUpdatingId(null);
   };
 
@@ -99,7 +115,7 @@ export default function UserCart() {
       setUpdatingId(null);
       return;
     }
-    setCartItems(prev => prev.filter(item => item.id !== id));
+    await refreshData();
     setSelectedItems(prev => {
       const next = new Set(prev);
       next.delete(id);
@@ -135,7 +151,6 @@ export default function UserCart() {
       return;
     }
     
-    // Check if user has payment pin set
     if (!userProfile?.hasPaymentPin) {
       showNotification("Anda belum mengatur Payment PIN. Silakan atur di Pengaturan Keamanan.", "error");
       return;
@@ -147,25 +162,49 @@ export default function UserCart() {
   const processPayment = async (pin: string) => {
     setIsCheckingOut(true);
     
-    // Verify PIN
     const verifyRes = await verifyPaymentPin(pin);
     if (!verifyRes.success) {
       setIsCheckingOut(false);
       throw new Error(verifyRes.message);
     }
 
-    // Process Checkout
     const res = await processCheckout(Array.from(selectedItems), paymentMethod);
     if (res.success) {
       showNotification(res.message, "success");
       setSelectedItems(new Set());
       setIsPinModalOpen(false);
-      await fetchCart();
+      await refreshData();
     } else {
       setIsCheckingOut(false);
       throw new Error(res.message);
     }
     setIsCheckingOut(false);
+  };
+
+  const handleCancelInit = (orderId: string) => {
+    setOrderToCancelId(orderId);
+    setCancelReason("");
+    setIsCancelModalOpen(true);
+  };
+
+  const submitCancelOrder = async () => {
+    if (!orderToCancelId || !cancelReason.trim()) {
+      showNotification("Alasan pembatalan tidak boleh kosong.", "error");
+      return;
+    }
+    
+    setIsCancelling(true);
+    const res = await handleCancelOrderAction(orderToCancelId, cancelReason);
+    
+    if (res.success) {
+      showNotification("Pesanan berhasil dibatalkan.", "success");
+      setIsCancelModalOpen(false);
+      setOrderToCancelId(null);
+      setCancelReason("");
+    } else {
+      showNotification(res.message || "Gagal membatalkan pesanan", "error");
+    }
+    setIsCancelling(false);
   };
 
   if (!user) return null;
@@ -189,17 +228,23 @@ export default function UserCart() {
               Semua buku yang ada di dalam keranjang Anda siap untuk di-checkout.
             </p>
           </div>
+          <Button 
+            className="shrink-0 gap-2 rounded-2xl md:ml-auto"
+            variant="outline"
+            onClick={() => setIsOrdersModalOpen(true)}
+          >
+            <PackageCheck className="w-5 h-5" />
+            Pesanan Saya
+          </Button>
         </header>
 
-        {loading ? (
+        {loadingCart || (ordersLoading && cartItems.length === 0) ? (
            <div className="py-24 text-center">
              <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4" />
              <p className="text-slate-500 font-medium animate-pulse">Memuat keranjang Anda...</p>
            </div>
         ) : cartItems.length > 0 ? (
           <div className="flex flex-col xl:flex-row gap-8">
-            
-            {/* List Keranjang */}
             <div className="block w-full xl:flex-1 space-y-4">
                <div className="flex items-center gap-3 p-4 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-2xl">
                  <input 
@@ -213,29 +258,27 @@ export default function UserCart() {
                
                <div className="space-y-4">
                  {cartItems.map((item, index) => (
-                   <div key={item.id} className="reveal" style={{ transitionDelay: `${Math.min(index * 50, 300)}ms` }}>
-                     <CartItemCard 
-                        id={item.id}
-                        bookTitle={item.book.title}
-                        bookAuthor={item.book.author}
-                        bookCategory={item.book.category?.name || "Kategori"}
-                        price={item.book.price}
-                        imageUrl={item.book.imageUrl}
-                        imageAlt={item.book.imageAlt}
-                        quantity={item.quantity}
-                        stock={item.book.stock}
-                        isSelected={selectedItems.has(item.id)}
-                        onToggleSelect={toggleSelect}
-                        onUpdateQuantity={handleUpdateQty}
-                        onRemove={handleRemove}
-                        isUpdating={updatingId === item.id}
-                     />
-                   </div>
+                    <CartItemCard 
+                       key={item.id}
+                       id={item.id}
+                       bookTitle={item.book.title}
+                       bookAuthor={item.book.author}
+                       bookCategory={item.book.category?.name || "Kategori"}
+                       price={item.book.price}
+                       imageUrl={item.book.imageUrl}
+                       imageAlt={item.book.imageAlt}
+                       quantity={item.quantity}
+                       stock={item.book.stock}
+                       isSelected={selectedItems.has(item.id)}
+                       onToggleSelect={toggleSelect}
+                       onUpdateQuantity={handleUpdateQty}
+                       onRemove={handleRemove}
+                       isUpdating={updatingId === item.id}
+                    />
                  ))}
                </div>
             </div>
 
-            {/* Detail Checkout Card */}
             <div className="w-full xl:w-[400px] shrink-0">
                <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-100 shadow-xl shadow-slate-200/40 sticky top-24">
                   <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
@@ -247,13 +290,8 @@ export default function UserCart() {
                       <span>Total Harga ({selectedItems.size} item)</span>
                       <span className="text-slate-800 font-bold">{formatCurrency(selectedTotal)}</span>
                     </div>
-                    <div className="flex justify-between text-slate-600 font-medium">
-                      <span>Diskon</span>
-                      <span className="text-slate-800 font-bold">{formatCurrency(0)}</span>
-                    </div>
                   </div>
 
-                  {/* Payment Method Selector */}
                   <div className="mb-6">
                     <h4 className="text-sm font-bold text-slate-700 mb-3">Pilih Metode Pembayaran</h4>
                     <div className="space-y-3">
@@ -332,8 +370,24 @@ export default function UserCart() {
         type={notifType}
         onClose={hideNotif}
       />
+
+      <OrderHistoryModal 
+        isOpen={isOrdersModalOpen}
+        onClose={() => setIsOrdersModalOpen(false)}
+        visibleOrders={visibleOrders}
+        isLoading={ordersLoading}
+        onClearHistory={clearOrdersBag}
+        onCancelInit={handleCancelInit}
+      />
+
+      <OrderCancelModal 
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        cancelReason={cancelReason}
+        setCancelReason={setCancelReason}
+        onSubmit={submitCancelOrder}
+        isCancelling={isCancelling}
+      />
     </UserLayout>
   );
 }
-
-

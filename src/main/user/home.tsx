@@ -18,8 +18,11 @@ import BookCardHorizontal from "@/src/components/user/BookCardHorizontal";
 
 import { useRequireRole } from "@/src/hooks/useRequireRole";
 import { useBookFilters } from "@/src/hooks/useBookFilters";
+import { useUserOrders } from "@/src/hooks/useUserOrders";
 import { CategoriesSection } from "@/src/components/landing/CategoriesSection";
 import type { Book, Category } from "@/src/types/landing";
+import { OrderNotificationModal } from "@/src/components/user/OrderNotificationModal";
+import { CartOrdersSummaryModal } from "@/src/components/user/CartOrdersSummaryModal";
 
 export default function UserHome({
   initialCategories,
@@ -43,7 +46,22 @@ export default function UserHome({
   
   const featuredBooks = initialBooks.filter(b => b.isFeatured).slice(0, 4);
 
-  const { user } = useRequireRole("users");
+  const { 
+    user,
+    notifications,
+    visibleCartItems,
+    visibleOrders,
+    activeOrdersCount,
+    clearNotifications,
+    clearCartBag,
+    clearOrdersBag
+  } = useUserOrders();
+
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false);
+
+  const unreadCount = notifications.length;
+  const totalCartCount = visibleCartItems.length;
 
   const isSearching = searchQuery.trim().length > 0 || activeCategory !== "all";
 
@@ -60,14 +78,28 @@ export default function UserHome({
         
         <div className="flex items-center gap-3">
           <div className="relative group">
-            <button className="w-11 h-11 rounded-2xl bg-white/60 backdrop-blur-md border border-white/40 flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-white transition-all shadow-sm">
+            <button 
+              onClick={() => setIsNotificationModalOpen(true)}
+              className="w-11 h-11 rounded-2xl bg-white/60 backdrop-blur-md border border-white/40 flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-white transition-all shadow-sm"
+            >
               <Bell className="w-5 h-5" />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 border-2 border-white rounded-full" />
+              {unreadCount > 0 && (
+                <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full" />
+              )}
             </button>
           </div>
-          <button className="w-11 h-11 rounded-2xl bg-white/60 backdrop-blur-md border border-white/40 flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-white transition-all shadow-sm">
-            <ShoppingBag className="w-5 h-5" />
-          </button>
+          <div className="relative group">
+            <button 
+              onClick={() => setIsCartModalOpen(true)}
+              className="w-11 h-11 rounded-2xl bg-white/60 backdrop-blur-md border border-white/40 flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-white transition-all shadow-sm"
+              aria-label="Keranjang dan Pesanan"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              {(totalCartCount > 0 || activeOrdersCount > 0) && (
+                <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full" />
+              )}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -115,16 +147,15 @@ export default function UserHome({
           </div>
           
           <div className="w-full md:w-1/3 bg-slate-200/30 relative min-h-45 md:min-h-0 overflow-hidden">
-             {/* Decorative images or elements */}
              <div className="absolute inset-0 flex items-center justify-center p-6">
                 {featuredBooks[0] && (
                   <div className="relative w-32 h-44 bg-white rounded-xl shadow-2xl transform -rotate-12 translate-x-4 group-hover/banner:-rotate-6 transition-transform duration-500">
-                     <img src={featuredBooks[0].imageUrl} alt={featuredBooks[0].title} className="w-full h-full object-cover rounded-xl" />
+                     <img src={featuredBooks[0].imageUrl || ''} alt={"featured book 1"} className="w-full h-full object-cover rounded-xl" />
                   </div>
                 )}
                 {featuredBooks[1] && (
                   <div className="relative w-32 h-44 bg-white rounded-xl shadow-2xl transform rotate-12 -translate-x-4 z-10 group-hover/banner:rotate-6 transition-transform duration-500">
-                     <img src={featuredBooks[1].imageUrl} alt={featuredBooks[1].title} className="w-full h-full object-cover rounded-xl" />
+                     <img src={featuredBooks[1].imageUrl || ''} alt={"featured book 2"} className="w-full h-full object-cover rounded-xl" />
                   </div>
                 )}
              </div>
@@ -196,6 +227,24 @@ export default function UserHome({
           )}
         </div>
       </section>
+
+      <OrderNotificationModal 
+        isOpen={isNotificationModalOpen}
+        onClose={() => setIsNotificationModalOpen(false)}
+        notifications={notifications}
+        onClear={clearNotifications}
+      />
+
+      <CartOrdersSummaryModal 
+        isOpen={isCartModalOpen}
+        onClose={() => setIsCartModalOpen(false)}
+        visibleCartItems={visibleCartItems}
+        visibleOrders={visibleOrders}
+        activeOrdersCount={activeOrdersCount}
+        totalCartCount={totalCartCount}
+        onClearCartBag={clearCartBag}
+        onClearOrdersBag={clearOrdersBag}
+      />
     </UserLayout>
   );
 }

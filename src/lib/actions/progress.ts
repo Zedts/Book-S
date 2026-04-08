@@ -56,13 +56,16 @@ export async function updateUserProgress(bookId: string, status: "reading" | "co
     });
 
     return { 
+      success: true,
+      message: "Progress berhasil diperbarui",
       data: updated 
     };
   } catch (error) {
     console.error("updateUserProgress Error:", error);
     return { success: false, message: "Gagal mengupdate progress buku" };
   } finally {
-    revalidatePath("/");
+    revalidatePath("/user/my-books");
+    revalidatePath("/user/home");
   }
 }
 

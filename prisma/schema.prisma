@@ -80,7 +80,9 @@ model Order {
   total         Int
   status        String   @default("pending") // 'pending', 'processing', 'completed', 'cancelled'
   paymentMethod String // 'Transfer Bank', 'E-wallet', 'COD'
-  paymentStatus String   @default("unpaid") // 'unpaid', 'paid'
+  paymentStatus String   @default("Unchecked") // 'Unchecked', 'paid'
+  cancelReason  String?  @db.Text
+  cancelledAt   DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
