@@ -425,6 +425,14 @@ export default function SettingsView({ requiredRole, Layout }: SettingsViewProps
     'notif-4': true,
   });
 
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsContactModalOpen(false);
+    showNotification("Pesan Anda berhasil terkirim ke Admin!", "success");
+  };
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -590,6 +598,21 @@ export default function SettingsView({ requiredRole, Layout }: SettingsViewProps
                 );
               })}
             </GlassCard>
+
+            {requiredRole === "users" && (
+              <button
+                onClick={() => setIsContactModalOpen(true)}
+                className="w-full flex items-center justify-between px-6 py-4 rounded-3xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors group font-bold tracking-wide text-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-100 rounded-xl group-hover:scale-110 transition-transform">
+                    <Mail className="w-4 h-4" />
+                  </div>
+                  Hubungi Admin
+                </div>
+                <ChevronRight className="w-4 h-4 opacity-50" />
+              </button>
+            )}
 
             <button
               onClick={handleLogout}
@@ -768,6 +791,26 @@ export default function SettingsView({ requiredRole, Layout }: SettingsViewProps
           </div>
         </div>
       </div>
+
+      {/* Contact Admin Modal */}
+      <Modal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} title="Hubungi Admin" size="md">
+        <form onSubmit={handleContactSubmit} className="flex flex-col gap-5 p-2">
+          <Input label="Nama Lengkap" placeholder="Masukkan nama Anda" required />
+          <Input label="Alamat Email" type="email" placeholder="nama@email.com" required />
+          <Input label="Nomor Telepon" type="tel" placeholder="08xxxxxxxxxx" required />
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-bold text-slate-700 ml-1">Pesan</label>
+            <textarea 
+              className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-100 bg-slate-50/50 outline-none transition-all resize-none h-32 text-sm md:text-base text-slate-800 placeholder-slate-400" 
+              placeholder="Tuliskan pesan Anda di sini..." 
+              required
+            />
+          </div>
+          <Button type="submit" variant="primary" className="h-14 mt-2 rounded-2xl shadow-md hover:shadow-lg transition-transform hover:-translate-y-1 w-full bg-slate-800 text-white">
+            Kirim Pesan
+          </Button>
+        </form>
+      </Modal>
 
       <Notification
         isOpen={notificationOpen}
