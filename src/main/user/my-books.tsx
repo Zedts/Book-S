@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { BookOpen, CheckCircle, Clock, ShoppingBag } from "lucide-react";
 import UserLayout from "@/src/components/layout/UserLayout";
@@ -12,15 +12,8 @@ import Modal from "@/src/components/ui/Modal";
 import { Button } from "@/src/components/ui/Button";
 import { ProgressModal } from "@/src/components/user/ProgressModal";
 import { RatingModal } from "@/src/components/user/RatingModal";
-import type { Book } from "@/src/types/landing";
+import type { UserBookProgress } from "@/src/types/progress";
 import type { OrderItem } from "@/src/types/order";
-
-type UserBookProgressData = {
-  id: string;
-  status: "reading" | "completed";
-  progress: number;
-  book: Book;
-};
 
 export default function UserMyBooks() {
   const router = useRouter();
@@ -32,21 +25,26 @@ export default function UserMyBooks() {
     refreshData
   } = useUserOrders();
 
-  const [selectedProgress, setSelectedProgress] = useState<UserBookProgressData | null>(null);
+  const [selectedProgress, setSelectedProgress] = useState<UserBookProgress | null>(null);
   const [selectedRatingBook, setSelectedRatingBook] = useState<{ id: string; title: string } | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
 
   if (!user) return null;
 
-  const pendingOrders = orders.filter(o => o.status === 'pending' || o.status === 'processing');
+  // Optimized filter logic
+  const { readingBooks, completedBooks, pendingOrders } = useMemo(() => {
+    const pending = orders.filter(o => o.status === 'pending');
+    
+    // Filter buku yang sedang pending / belum dikonfirmasi
+    const pendingBookIds = new Set(
+      pending.flatMap(order => order.orderItems.map(item => item.book.id))
+    );
 
-  // Filter buku yang sedang pending / processing
-  const pendingBookIds = new Set(
-    pendingOrders.flatMap(order => order.orderItems.map(item => item.book.id))
-  );
+    const reading = progresses.filter((p) => p.status === "reading" && !pendingBookIds.has(p.book.id));        
+    const completed = progresses.filter((p) => p.status === "completed" && !pendingBookIds.has(p.book.id));
 
-  const readingBooks = (progresses as UserBookProgressData[]).filter((p) => p.status === "reading" && !pendingBookIds.has(p.book.id));        
-  const completedBooks = (progresses as UserBookProgressData[]).filter((p) => p.status === "completed" && !pendingBookIds.has(p.book.id));    
+    return { readingBooks: reading, completedBooks: completed, pendingOrders: pending };
+  }, [orders, progresses]);
 
   return (
     <UserLayout>

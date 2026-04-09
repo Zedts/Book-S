@@ -3,6 +3,7 @@
 import { prisma } from "@/src/lib/prisma";
 import { getSession } from "@/src/lib/auth";
 import { revalidatePath } from "next/cache";
+import { calculateTrendPercentage } from "../utils";
 
 export async function getAllOrders() {
   const session = await getSession();
@@ -42,13 +43,17 @@ export async function getOrderStats() {
     throw new Error("Unauthorized");
   }
 
+  const now = new Date();
+  const yesterday = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000);
+  const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+
   const totalOrders = await prisma.order.count();
   const totalRevenue = await prisma.order.aggregate({
     _sum: {
       total: true
     },
     where: {
-      status: "completed"
+      paymentStatus: "paid"
     }
   });
 
@@ -56,10 +61,42 @@ export async function getOrderStats() {
     where: { status: "pending" }
   });
 
+  const currentPeriodOrders = await prisma.order.count({
+    where: {
+      createdAt: { gte: yesterday }
+    }
+  });
+
+  const previousPeriodOrders = await prisma.order.count({
+    where: {
+      createdAt: { gte: twoDaysAgo, lt: yesterday }
+    }
+  });
+
+  const currentPeriodRevenue = await prisma.order.aggregate({
+    _sum: { total: true },
+    where: {
+      paymentStatus: "paid",
+      createdAt: { gte: yesterday }
+    }
+  });
+
+  const previousPeriodRevenue = await prisma.order.aggregate({
+    _sum: { total: true },
+    where: {
+      paymentStatus: "paid",
+      createdAt: { gte: twoDaysAgo, lt: yesterday }
+    }
+  });
+
   return {
     totalOrders,
     totalRevenue: totalRevenue._sum.total || 0,
-    pendingOrders
+    pendingOrders,
+    trends: {
+      orders: calculateTrendPercentage(currentPeriodOrders, previousPeriodOrders),
+      revenue: calculateTrendPercentage(currentPeriodRevenue._sum.total || 0, previousPeriodRevenue._sum.total || 0)
+    }
   };
 }
 
@@ -81,6 +118,8 @@ export async function updateOrderStatus(orderId: string, status: string, payment
     });
     
     revalidatePath('/admin/orders');
+    revalidatePath('/user/my-books');
+    revalidatePath('/user/home');
     return { success: true, message: "Status pesanan berhasil diperbarui." };
   } catch (error) {
     console.error("Error updating order status:", error);

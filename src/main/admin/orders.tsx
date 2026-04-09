@@ -13,6 +13,7 @@ import { useNotification } from "@/src/hooks/useNotification";
 import { AdminPageHeader } from "@/src/components/admin/AdminPageHeader";
 import { AdminSearchToolbar } from "@/src/components/admin/AdminSearchToolbar";
 import { AdminStatusBadge } from "@/src/components/admin/AdminStatusBadge";
+import Modal from "@/src/components/ui/Modal";
 
 import type { OrderItem } from "@/src/types/order";
 import { ORDER_STATUS, PAYMENT_STATUS } from "@/src/lib/constants";
@@ -22,6 +23,8 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [cancelModalOrder, setCancelModalOrder] = useState<string | null>(null);
+  const [confirmModalOrder, setConfirmModalOrder] = useState<string | null>(null);
 
   const { 
     isOpen: notifOpen, 
@@ -46,8 +49,8 @@ export default function AdminOrders() {
     fetchOrders();
   }, []);
 
-  const handleUpdateStatus = async (orderId: string, newStatus: string, paymentStatus?: string) => {
-    if (!confirm(`Apakah Anda yakin ingin mengubah status menjadi ${newStatus}?`)) return;
+  const handleUpdateStatus = async (orderId: string, newStatus: string, paymentStatus?: string, skipConfirm = false) => {
+    if (!skipConfirm && !confirm(`Apakah Anda yakin ingin mengubah status menjadi ${newStatus}?`)) return;
     
     setUpdatingId(orderId);
     try {
@@ -56,7 +59,7 @@ export default function AdminOrders() {
         showNotification(res.message, "success");
         setOrders(orders.map(o => 
           o.id === orderId 
-            ? { ...o, status: newStatus as any, paymentStatus: (paymentStatus || o.paymentStatus) as any } 
+            ? { ...o, status: newStatus as OrderItem["status"], paymentStatus: (paymentStatus || o.paymentStatus) as OrderItem["paymentStatus"] } 
             : o
         ));
       } else {
@@ -112,7 +115,6 @@ export default function AdminOrders() {
                       <span className="font-mono text-sm font-bold border border-slate-200 bg-slate-50 px-2 py-1 rounded-md text-slate-600">
                         #{order.id.slice(0, 8).toUpperCase()}
                       </span>
-                      <AdminStatusBadge status={order.status} size="sm" />
                       <AdminStatusBadge status={order.paymentStatus} type="payment" size="sm" />
                     </div>
                     
@@ -153,48 +155,38 @@ export default function AdminOrders() {
                   <div className="lg:w-64 flex flex-col gap-3 lg:border-l lg:border-slate-100 lg:pl-6">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Aksi Cepat</p>
                     
-                    {order.status === ORDER_STATUS.PENDING && (
+                    {order.paymentStatus === PAYMENT_STATUS.UNCHECKED && (
                       <>
                         <button 
                           disabled={updatingId === order.id}
-                          onClick={() => handleUpdateStatus(order.id, ORDER_STATUS.PROCESSING, PAYMENT_STATUS.PAID)}
+                          onClick={() => setConfirmModalOrder(order.id)}
                           className="flex items-center justify-between w-full p-3 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors border border-blue-200 disabled:opacity-50"
                         >
-                          <span className="font-semibold text-sm">Proses Pesanan</span>
+                          <span className="font-semibold text-sm">Konfirmasi Pembayaran</span>
                           <ArrowRight className="w-4 h-4" />
                         </button>
                         <button 
                           disabled={updatingId === order.id}
-                          onClick={() => handleUpdateStatus(order.id, ORDER_STATUS.CANCELLED)}
-                          className="w-full py-2.5 rounded-xl bg-white text-rose-600 hover:bg-rose-50 transition-colors border border-rose-200 font-medium text-sm disabled:opacity-50"
+                          onClick={() => setCancelModalOrder(order.id)}
+                          className="flex items-center justify-between w-full p-3 rounded-xl bg-white text-rose-600 hover:bg-rose-50 transition-colors border border-rose-200 disabled:opacity-50"
                         >
-                          Batalkan Pesanan
+                          <span className="font-semibold text-sm">Batalkan Pesanan</span>
+                          <XCircle className="w-4 h-4" />
                         </button>
                       </>
                     )}
 
-                    {order.status === ORDER_STATUS.PROCESSING && (
-                      <button 
-                        disabled={updatingId === order.id}
-                        onClick={() => handleUpdateStatus(order.id, ORDER_STATUS.COMPLETED)}
-                        className="flex items-center justify-between w-full p-3 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors border border-emerald-200 disabled:opacity-50"
-                      >
-                        <span className="font-semibold text-sm">Selesaikan Pesanan</span>
-                        <CheckCircle2 className="w-4 h-4" />
-                      </button>
-                    )}
-
-                    {order.status === ORDER_STATUS.COMPLETED && (
+                    {order.paymentStatus === PAYMENT_STATUS.PAID && (
                        <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-emerald-200 rounded-xl bg-emerald-50/50 p-4">
                           <CheckCircle2 className="w-8 h-8 text-emerald-400 mb-2" />
-                          <span className="text-sm font-semibold text-emerald-600 text-center">Pesanan Selesai</span>
+                          <span className="text-sm font-semibold text-emerald-600 text-center">Pembayaran Selesai</span>
                        </div>
                     )}
                     
-                    {order.status === ORDER_STATUS.CANCELLED && (
+                    {order.paymentStatus === PAYMENT_STATUS.FAILED && (
                        <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-rose-200 rounded-xl bg-rose-50/50 p-4">
                           <XCircle className="w-8 h-8 text-rose-400 mb-2" />
-                          <span className="text-sm font-semibold text-rose-600 text-center">Pesanan Dibatalkan</span>
+                          <span className="text-sm font-semibold text-rose-600 text-center">Pembayaran Gagal</span>
                        </div>
                     )}
                   </div>
@@ -210,6 +202,68 @@ export default function AdminOrders() {
         type={notifType}
         onClose={hideNotif}
       />
+
+      <Modal
+        isOpen={!!cancelModalOrder}
+        onClose={() => setCancelModalOrder(null)}
+        title="Konfirmasi Pembatalan"
+      >
+        <div className="space-y-4">
+          <p className="text-slate-600">
+            Apakah Anda yakin ingin membatalkan pesanan ini? Aksi ini tidak dapat dibatalkan.
+          </p>
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <button
+              onClick={() => setCancelModalOrder(null)}
+              className="px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl font-medium text-sm transition-colors"
+            >
+              Batal
+            </button>
+            <button
+              onClick={() => {
+                if (cancelModalOrder) {
+                  handleUpdateStatus(cancelModalOrder, ORDER_STATUS.CANCELLED, PAYMENT_STATUS.FAILED, true);
+                  setCancelModalOrder(null);
+                }
+              }}
+              className="px-4 py-2 bg-rose-600 text-white hover:bg-rose-700 rounded-xl font-medium text-sm transition-colors"
+            >
+              Ya, Batalkan
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={!!confirmModalOrder}
+        onClose={() => setConfirmModalOrder(null)}
+        title="Konfirmasi Pembayaran"
+      >
+        <div className="space-y-4">
+          <p className="text-slate-600">
+            Apakah Anda yakin ingin mengkonfirmasi pembayaran ini? Status pesanan akan menjadi selesai.
+          </p>
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <button
+              onClick={() => setConfirmModalOrder(null)}
+              className="px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl font-medium text-sm transition-colors"
+            >
+              Batal
+            </button>
+            <button
+              onClick={() => {
+                if (confirmModalOrder) {
+                  handleUpdateStatus(confirmModalOrder, ORDER_STATUS.COMPLETED, PAYMENT_STATUS.PAID, true);
+                  setConfirmModalOrder(null);
+                }
+              }}
+              className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-medium text-sm transition-colors"
+            >
+              Ya, Konfirmasi
+            </button>
+          </div>
+        </div>
+      </Modal>
     </AdminLayout>
   );
 }

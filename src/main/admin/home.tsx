@@ -1,14 +1,18 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useEffect, useState } from "react";
-import { Heart, ShoppingCart, DollarSign, BookOpen, TrendingUp, TrendingDown, ArrowUpRight, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
+import { Heart, ShoppingCart, DollarSign, BookOpen, ArrowUpRight, Loader2, Bell } from "lucide-react";
 import { Button } from "@/src/components/ui/Button";
 import { GlassCard } from "@/src/components/ui/GlassCard";
 import { useRequireRole } from "@/src/hooks/useRequireRole";
 import AdminLayout from "@/src/components/layout/AdminLayout";
 import AdminReportModal from "@/src/components/ui/AdminReportModal";
-import { cn, formatCurrency } from "@/src/lib/utils";
+import { AdminPageHeader } from "@/src/components/admin/AdminPageHeader";
+import { AdminNotificationModal } from "@/src/components/admin/AdminNotificationModal";
+import { AdminStatCard } from "@/src/components/admin/AdminStatCard";
+import { cn, formatCurrency, calculateTrendPercentage } from "@/src/lib/utils";
 import { getAllOrders, getOrderStats } from "@/src/lib/actions/order";
 import { getBooks, getTopBooks } from "@/src/lib/actions/book";
 import type { OrderItem, OrderStats } from "@/src/types/order";
@@ -23,14 +27,34 @@ type TopBookItem = {
 };
 
 export default function AdminHome() {
+  const router = useRouter();
   const { loading: authLoading } = useRequireRole('admin');
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<OrderStats | null>(null);
   const [allOrders, setAllOrders] = useState<OrderItem[]>([]);
   const [recentOrders, setRecentOrders] = useState<OrderItem[]>([]);
   const [totalBooks, setTotalBooks] = useState(0);
+  const [booksTrend, setBooksTrend] = useState({ value: "0%", isPositive: true });
   const [topBooks, setTopBooks] = useState<TopBookItem[]>([]);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [adminNotificationsClearedAt, setAdminNotificationsClearedAt] = useState<number>(0);
+
+  useEffect(() => {
+    setAdminNotificationsClearedAt(parseInt(localStorage.getItem("adminNotificationsClearedAt") || "0", 10));
+  }, []);
+
+  const adminNotifications = useMemo(() => {
+    return allOrders.filter(
+      (o) => o.paymentStatus === 'Unchecked' && new Date(o.createdAt).getTime() > adminNotificationsClearedAt
+    );
+  }, [allOrders, adminNotificationsClearedAt]);
+
+  const handleClearNotifications = () => {
+    const now = Date.now();
+    setAdminNotificationsClearedAt(now);
+    localStorage.setItem("adminNotificationsClearedAt", now.toString());
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,14 +68,25 @@ export default function AdminHome() {
         
         setStats(statsData);
         if (Array.isArray(ordersData)) {
-          setAllOrders(ordersData as unknown as OrderItem[]);
-          setRecentOrders((ordersData as unknown as OrderItem[]).slice(0, 5));
+          const orders = ordersData as unknown as OrderItem[];
+          setAllOrders(orders);
+          setRecentOrders(orders.slice(0, 5));
         }
         if (Array.isArray(booksData)) {
           setTotalBooks(booksData.length);
+          const now = new Date();
+          const yesterday = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000);
+          const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+          
+          const recentBooks = booksData.filter(b => new Date((b as any).createdAt || new Date()) >= yesterday).length;
+          const previousBooks = booksData.filter(b => {
+            const date = new Date((b as any).createdAt || new Date());
+            return date >= twoDaysAgo && date < yesterday;
+          }).length;
+          setBooksTrend(calculateTrendPercentage(recentBooks, previousBooks));
         }
         if (Array.isArray(topBooksData)) {
-          setTopBooks(topBooksData);
+          setTopBooks(topBooksData as TopBookItem[]);
         }
       } catch (error) {
         console.error("Failed to load dashboard data:", error);
@@ -72,49 +107,53 @@ export default function AdminHome() {
   }
 
   const kpis = [
-    { label: "Total Pesanan", value: stats?.totalOrders.toLocaleString() || "0", icon: ShoppingCart, trend: "+5.2%", isPositive: true },
-    { label: "Total Pendapatan", value: formatCurrency(stats?.totalRevenue || 0), icon: DollarSign, trend: "+18.1%", isPositive: true },
-    { label: "Total Buku Aktif", value: totalBooks.toLocaleString(), icon: BookOpen, trend: "Stable", isPositive: true },
-    { label: "Menunggu Proses", value: stats?.pendingOrders.toLocaleString() || "0", icon: Heart, trend: "Current", isPositive: true },
+    { label: "Total Pesanan", value: stats?.totalOrders.toLocaleString() || "0", icon: <ShoppingCart className="w-6 h-6" />, color: "indigo" as const, trend: stats?.trends?.orders },
+    { label: "Total Pendapatan", value: formatCurrency(stats?.totalRevenue || 0), icon: <DollarSign className="w-6 h-6" />, color: "emerald" as const, trend: stats?.trends?.revenue },
+    { label: "Total Buku Aktif", value: totalBooks.toLocaleString(), icon: <BookOpen className="w-6 h-6" />, color: "blue" as const, trend: booksTrend },
+    { label: "Menunggu Proses", value: stats?.pendingOrders.toLocaleString() || "0", icon: <Heart className="w-6 h-6" />, color: "amber" as const },
   ];
 
   return (
     <AdminLayout>
-      <div className="space-y-8 pb-12 reveal active">
-        {/* Header Overview */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Ringkasan Admin</h1>
-            <p className="text-slate-500 mt-1">Pantau aktivitas toko dan kinerja penjualan real-time.</p>
-          </div>
-          <Button variant="primary" className="shrink-0 gap-2 shadow-lg" onClick={() => setIsReportModalOpen(true)}>
-            <ArrowUpRight className="w-4 h-4" />
-            Unduh Laporan
-          </Button>
-        </div>
+      <div className="space-y-8">
+        <AdminPageHeader 
+          title="Ringkasan Admin" 
+          description="Pantau aktivitas toko dan kinerja penjualan real-time."
+          actionLabel="Unduh Laporan"
+          actionIcon={<ArrowUpRight className="w-5 h-5 mr-1" />}
+          onActionClick={() => setIsReportModalOpen(true)}
+        >
+          <button 
+            onClick={() => setIsNotificationModalOpen(true)}
+            className="relative p-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
+            aria-label="Notifikasi"
+          >
+            <Bell className="w-5 h-5" />
+            {adminNotifications.length > 0 && (
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white animate-pulse" />
+            )}
+          </button>
+        </AdminPageHeader>
+
+        <AdminNotificationModal
+          isOpen={isNotificationModalOpen}
+          onClose={() => setIsNotificationModalOpen(false)}
+          notifications={adminNotifications}
+          onClear={handleClearNotifications}
+        />
 
         {/* Key Metrics / KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {kpis.map((stat, i) => {
-            const Icon = stat.icon;
-            return (
-              <GlassCard key={i} className="p-6 flex flex-col hover:border-slate-300 transition-colors">
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`p-3 rounded-2xl ${stat.isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <span className={`flex items-center gap-1 text-sm font-bold px-2.5 py-1 rounded-full ${stat.isPositive ? 'bg-emerald-100/50 text-emerald-700' : 'bg-rose-100/50 text-rose-700'}`}>
-                    {stat.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    {stat.trend}
-                  </span>
-                </div>
-                <div>
-                  <h3 className="text-slate-500 text-sm font-medium mb-1">{stat.label}</h3>
-                  <p className="text-3xl font-extrabold text-slate-800 tracking-tight">{stat.value}</p>
-                </div>
-              </GlassCard>
-            );
-          })}
+          {kpis.map((stat, i) => (
+            <AdminStatCard 
+              key={i}
+              title={stat.label}
+              value={stat.value}
+              icon={stat.icon}
+              color={stat.color}
+              trend={stat.trend}
+            />
+          ))}
         </div>
 
         {/* Detail Sections */}

@@ -7,6 +7,7 @@ interface AdminPageHeaderProps {
   actionLabel?: string;
   onActionClick?: () => void;
   actionIcon?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export const AdminPageHeader: React.FC<AdminPageHeaderProps> = ({
@@ -14,7 +15,8 @@ export const AdminPageHeader: React.FC<AdminPageHeaderProps> = ({
   description,
   actionLabel,
   onActionClick,
-  actionIcon = <Plus className="w-5 h-5" />
+  actionIcon = <Plus className="w-5 h-5" />,
+  children
 }) => {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -22,15 +24,18 @@ export const AdminPageHeader: React.FC<AdminPageHeaderProps> = ({
         <h1 className="text-3xl font-bold text-slate-800 tracking-tight">{title}</h1>
         <p className="text-slate-500 mt-1">{description}</p>
       </div>
-      {actionLabel && onActionClick && (
-        <button 
-          onClick={onActionClick}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-800 text-white font-medium rounded-xl hover:bg-slate-900 transition-colors shadow-sm"
-        >
-          {actionIcon}
-          {actionLabel}
-        </button>
-      )}
+      <div className="flex items-center gap-3">
+        {children}
+        {actionLabel && onActionClick && (
+          <button 
+            onClick={onActionClick}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-800 text-white font-medium rounded-xl hover:bg-slate-900 transition-colors shadow-sm"
+          >
+            {actionIcon}
+            {actionLabel}
+          </button>
+        )}
+      </div>
     </div>
   );
 };

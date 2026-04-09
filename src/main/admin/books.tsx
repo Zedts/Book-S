@@ -47,7 +47,9 @@ export default function AdminBooks() {
     stock: 0,
     imageUrl: "",
     categoryId: "",
-    isFeatured: false
+    isFeatured: false,
+    imageFile: null as File | null,
+    previewUrl: ""
   });
 
   const fetchData = async () => {
@@ -71,7 +73,7 @@ export default function AdminBooks() {
 
   const openAddModal = () => {
     setIsEditing(false);
-    setFormData({ title: "", author: "", description: "", price: 0, stock: 0, imageUrl: "", categoryId: "", isFeatured: false });
+    setFormData({ title: "", author: "", description: "", price: 0, stock: 0, imageUrl: "", categoryId: "", isFeatured: false, imageFile: null, previewUrl: "" });
     setIsModalOpen(true);
   };
 
@@ -84,8 +86,10 @@ export default function AdminBooks() {
       price: book.price || 0,
       stock: book.stock || 0,
       imageUrl: book.imageUrl || "",
-      categoryId: book.categoryId || "",
-      isFeatured: book.isFeatured || false
+      categoryId: book.category?.name || book.categoryId || "",
+      isFeatured: book.isFeatured || false,
+      imageFile: null,
+      previewUrl: book.imageUrl || ""
     });
     setSelectedBook(book);
     setIsModalOpen(true);
@@ -105,6 +109,9 @@ export default function AdminBooks() {
       data.append("categoryId", formData.categoryId);
       data.append("imageUrl", formData.imageUrl);
       data.append("isFeatured", formData.isFeatured.toString());
+      if (formData.imageFile) {
+        data.append("imageFile", formData.imageFile);
+      }
 
       if (isEditing && selectedBook) {
         const res = await updateBook(selectedBook.id, data);

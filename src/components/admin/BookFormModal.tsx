@@ -53,17 +53,20 @@ export const BookFormModal: React.FC<BookFormModalProps> = ({
             </div>
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700">Kategori</label>
-              <select 
+              <input 
+                list="category-options"
+                type="text"
                 required
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-800 focus:border-transparent outline-none transition-all bg-white"
                 value={formData.categoryId}
                 onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
-              >
-                <option value="">Pilih Kategori</option>
+                placeholder="Pilih atau ketik kategori baru"
+              />
+              <datalist id="category-options">
                 {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  <option key={cat.id} value={cat.name} />
                 ))}
-              </select>
+              </datalist>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -90,21 +93,55 @@ export const BookFormModal: React.FC<BookFormModalProps> = ({
           </div>
 
           <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">URL Gambar Cover</label>
-              <input 
-                type="text" 
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-800 focus:border-transparent outline-none transition-all"
-                value={formData.imageUrl}
-                onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                placeholder="https://example.com/image.jpg"
-              />
+            <div className="space-y-3">
+              <label className="text-sm font-bold text-slate-700">Gambar Cover</label>
+              
+              <div className="flex flex-col gap-3">
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="cover-upload"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setFormData({
+                          ...formData,
+                          imageFile: file,
+                          previewUrl: URL.createObjectURL(file)
+                        });
+                      }
+                    }}
+                  />
+                  <label 
+                    htmlFor="cover-upload"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl cursor-pointer transition-colors border border-slate-200"
+                  >
+                    Upload dari Perangkat
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="h-px bg-slate-200 flex-1"></div>
+                  <span className="text-xs text-slate-400 font-medium">ATAU</span>
+                  <div className="h-px bg-slate-200 flex-1"></div>
+                </div>
+
+                <input 
+                  type="text" 
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-800 focus:border-transparent outline-none transition-all text-sm"
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
+                  placeholder="Gunakan URL (https://...)"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700">Preview Cover</label>
               <div className="aspect-[3/4] rounded-2xl bg-slate-100 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden">
-                {formData.imageUrl ? (
-                  <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                {(formData.previewUrl || formData.imageUrl) ? (
+                  <img src={formData.previewUrl || formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
                 ) : (
                   <div className="text-center p-6">
                     <p className="text-xs text-slate-400">Preview gambar akan muncul di sini</p>

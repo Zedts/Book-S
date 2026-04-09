@@ -5,8 +5,28 @@ import type { Book, Category } from '@prisma/client';
 import { getSession } from '@/src/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { savePublicFile } from '../upload';
+import { createCategory } from '@/src/lib/actions/category';
 
 type BookWithCategory = Book & { category: Category | null };
+
+async function resolveCategoryId(categoryId: string): Promise<string | null> {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  
+  if (uuidRegex.test(categoryId)) {
+    const existingById = await prisma.category.findUnique({ where: { id: categoryId } });
+    if (existingById) return existingById.id;
+  }
+  
+  const existingByName = await prisma.category.findFirst({ where: { name: categoryId } });
+  if (existingByName) return existingByName.id;
+  
+  const createResult = await createCategory(categoryId);
+  if (createResult.success && createResult.data) {
+    return createResult.data.id;
+  }
+  
+  return null;
+}
 
 // Utility to serialize Books to Plain Objects and prevent Date Serialization Errors
 function mapBookToPlainObject(book: BookWithCategory) {
@@ -143,6 +163,9 @@ export async function createBook(formData: FormData) {
     const stock = parseInt(stockStr, 10);
     if (isNaN(price) || isNaN(stock)) return { success: false, message: 'Harga dan Stok harus berupa angka' };
 
+    const finalCategoryId = await resolveCategoryId(categoryId);
+    if (!finalCategoryId) return { success: false, message: 'Gagal memproses kategori' };
+
     // Image logic
     const urlInput = formData.get("imageUrl")?.toString();
     const file = formData.get("imageFile") as File | null;
@@ -166,7 +189,7 @@ export async function createBook(formData: FormData) {
         description,
         price,
         stock,
-        categoryId,
+        categoryId: finalCategoryId,
         isFeatured,
         imageUrl: finalImageUrl,
         imageAlt: title,
@@ -201,6 +224,9 @@ export async function updateBook(id: string, formData: FormData) {
     const price = parseInt(priceStr, 10);
     const stock = parseInt(stockStr, 10);
 
+    const finalCategoryId = await resolveCategoryId(categoryId);
+    if (!finalCategoryId) return { success: false, message: 'Gagal memproses kategori' };
+
     const existingBook = await prisma.book.findUnique({ where: { id } });
     if (!existingBook) return { success: false, message: 'Buku tidak ditemukan' };
 
@@ -226,7 +252,7 @@ export async function updateBook(id: string, formData: FormData) {
         description,
         price,
         stock,
-        categoryId,
+        categoryId: finalCategoryId,
         isFeatured,
         imageUrl: finalImageUrl,
         imageAlt: title,

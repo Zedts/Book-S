@@ -33,4 +33,8 @@ export type OrderStats = {
   totalOrders: number;
   totalRevenue: number;
   pendingOrders: number;
+  trends?: {
+    orders: { value: string; isPositive: boolean };
+    revenue: { value: string; isPositive: boolean };
+  };
 };

@@ -7,6 +7,9 @@ import { Button } from "@/src/components/ui/Button";
 import Modal from "@/src/components/ui/Modal";
 import Notification from "@/src/components/ui/Notification";
 import { Plus, Search, Edit2, Trash2, Loader2, AlertTriangle, Hash, LayoutGrid } from "lucide-react";
+import { AdminPageHeader } from "@/src/components/admin/AdminPageHeader";
+import { AdminSearchToolbar } from "@/src/components/admin/AdminSearchToolbar";
+import { useNotification } from "@/src/hooks/useNotification";
 import { getCategories, createCategory, updateCategory, deleteCategory } from "@/src/lib/actions/category";
 
 type CategoryItem = {
@@ -26,11 +29,13 @@ export default function AdminCategories() {
   const [catName, setCatName] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const [notif, setNotif] = useState<{ isOpen: boolean; message: string; type: "success" | "error" }>({
-    isOpen: false,
-    message: "",
-    type: "success",
-  });
+  const { 
+    isOpen: notifOpen, 
+    message: notifMessage, 
+    type: notifType, 
+    showNotification, 
+    onClose: hideNotif 
+  } = useNotification();
 
   const fetchAllCategories = async () => {
     try {
@@ -39,7 +44,7 @@ export default function AdminCategories() {
       if (Array.isArray(res)) setCategories(res as CategoryItem[]);
     } catch (error) {
       console.error("Failed to load categories:", error);
-      showNotif("Gagal mengambil data kategori", "error");
+      showNotification("Gagal mengambil data kategori", "error");
     } finally {
       setLoading(false);
     }
@@ -49,10 +54,6 @@ export default function AdminCategories() {
     fetchAllCategories();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const showNotif = (message: string, type: "success" | "error") => {
-    setNotif({ isOpen: true, message, type });
-  };
 
   const handleOpenAdd = () => {
     setSelectedCat(null);
@@ -74,7 +75,7 @@ export default function AdminCategories() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!catName.trim()) {
-      showNotif("Nama kategori tidak boleh kosong", "error");
+      showNotification("Nama kategori tidak boleh kosong", "error");
       return;
     }
 
@@ -88,15 +89,15 @@ export default function AdminCategories() {
       }
 
       if (res?.success) {
-        showNotif(res.message, "success");
+        showNotification(res.message, "success");
         setIsModalOpen(false);
         fetchAllCategories();
       } else {
-        showNotif(res?.message || "Terjadi kesalahan", "error");
+        showNotification(res?.message || "Terjadi kesalahan", "error");
       }
     } catch (error) {
       console.error(error);
-      showNotif("Terjadi kesalahan sistem", "error");
+      showNotification("Terjadi kesalahan sistem", "error");
     } finally {
       setSubmitting(false);
     }
@@ -108,15 +109,15 @@ export default function AdminCategories() {
     try {
       const res = await deleteCategory(selectedCat.id);
       if (res?.success) {
-        showNotif(res.message, "success");
+        showNotification(res.message, "success");
         setIsDeleteModalOpen(false);
         fetchAllCategories();
       } else {
-        showNotif(res?.message || "Gagal menghapus kategori", "error");
+        showNotification(res?.message || "Gagal menghapus kategori", "error");
       }
     } catch (error) {
       console.error(error);
-      showNotif("Gagal menghapus kategori", "error");
+      showNotification("Gagal menghapus kategori", "error");
     } finally {
       setSubmitting(false);
     }
@@ -130,36 +131,18 @@ export default function AdminCategories() {
   return (
     <AdminLayout>
       <div className="space-y-6 pb-12 reveal active">
-        {/* Header Kategori */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
-              <LayoutGrid className="w-7 h-7" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-black text-slate-800 tracking-tight">Kategori</h1>
-              <p className="text-slate-500 font-medium">Klasifikasikan buku dan atur genre pustaka.</p>
-            </div>
-          </div>
-          <Button variant="primary" onClick={handleOpenAdd}>
-            <Plus className="w-5 h-5 mr-2" />
-            <span>Kategori Baru</span>
-          </Button>
-        </div>
+        <AdminPageHeader 
+          title="Kategori" 
+          description="Klasifikasikan buku dan atur genre pustaka."
+          actionLabel="Kategori Baru"
+          onActionClick={handleOpenAdd}
+        />
 
-        {/* Pencarian Kategori */}
-        <div className="relative w-full shadow-sm">
-          <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-            <Search className="w-6 h-6 text-slate-400" />
-          </div>
-          <input
-            type="text"
-            placeholder="Ketik untuk mencari kategori..."
-            className="w-full pl-14 pr-6 py-4 bg-white border border-slate-200 hover:border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 rounded-2xl text-slate-700 font-medium transition-all outline-none"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+        <AdminSearchToolbar
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Ketik untuk mencari kategori..."
+        />
 
         {/* Tampilan Grid Kartu Kategori */}
         {loading ? (
@@ -243,7 +226,7 @@ export default function AdminCategories() {
         </div>
       </Modal>
 
-      <Notification isOpen={notif.isOpen} message={notif.message} type={notif.type} onClose={() => setNotif(prev => ({ ...prev, isOpen: false }))} />
+      <Notification isOpen={notifOpen} message={notifMessage} type={notifType} onClose={hideNotif} />
     </AdminLayout>
   );
 }

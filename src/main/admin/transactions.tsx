@@ -13,7 +13,7 @@ import { formatCurrency } from "@/src/lib/utils";
 import { AdminPageHeader } from "@/src/components/admin/AdminPageHeader";
 import { AdminSearchToolbar } from "@/src/components/admin/AdminSearchToolbar";
 import { AdminStatusBadge } from "@/src/components/admin/AdminStatusBadge";
-
+import { AdminStatCard } from "@/src/components/admin/AdminStatCard";
 import type { OrderItem, OrderStats } from "@/src/types/order";
 
 export default function AdminTransactions() {
@@ -64,22 +64,23 @@ export default function AdminTransactions() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <StatCard 
+          <AdminStatCard 
             title="Total Pendapatan"
             value={stats ? formatCurrency(stats.totalRevenue) : "Rp0"}
             subtitle="Total revenue pesanan selesai"
             icon={<DollarSign className="w-6 h-6" />}
             color="emerald"
-            trend={<ArrowUpRight className="w-3 h-3 mr-1" />}
+            trend={stats?.trends?.revenue}
           />
-          <StatCard 
+          <AdminStatCard 
             title="Total Pesanan"
             value={stats ? stats.totalOrders.toString() : "0"}
             subtitle="Total pesanan dibuat"
             icon={<ShoppingBag className="w-6 h-6" />}
             color="indigo"
+            trend={stats?.trends?.orders}
           />
-          <StatCard 
+          <AdminStatCard 
             title="Pesanan Pending"
             value={stats ? stats.pendingOrders.toString() : "0"}
             subtitle="Pesanan menunggu diproses"
@@ -244,37 +245,4 @@ export default function AdminTransactions() {
   );
 }
 
-function StatCard({ title, value, subtitle, icon, color, trend }: any) {
-  const colorClasses: any = {
-    emerald: "bg-emerald-500/10 text-emerald-600 bg-emerald-50 border-emerald-100",
-    indigo: "bg-indigo-500/10 text-indigo-600 bg-indigo-50 border-indigo-100",
-    amber: "bg-amber-500/10 text-amber-600 bg-amber-50 border-amber-100"
-  };
 
-  const blurClasses: any = {
-    emerald: "bg-emerald-500/10",
-    indigo: "bg-indigo-500/10",
-    amber: "bg-amber-500/10"
-  };
-
-  return (
-    <GlassCard className="p-6 relative overflow-hidden group">
-      <div className={`absolute -right-6 -top-6 w-24 h-24 ${blurClasses[color]} rounded-full group-hover:scale-150 transition-transform duration-500 blur-2xl`} />
-      <div className="flex items-center justify-between mb-4 relative">
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${colorClasses[color]}`}>
-          {icon}
-        </div>
-        {trend && (
-          <span className={`flex items-center text-sm font-medium ${colorClasses[color]} px-2 py-1 rounded-full`}>
-            {trend}
-            {title}
-          </span>
-        )}
-      </div>
-      <div className="relative">
-        <h3 className="text-3xl font-bold text-slate-800">{value}</h3>
-        <p className="text-slate-500 text-sm mt-1">{subtitle}</p>
-      </div>
-    </GlassCard>
-  );
-}

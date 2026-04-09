@@ -44,3 +44,6 @@ next-env.d.ts
 
 /public/pfp/*
 !/public/pfp/.gitkeep
+
+/public/books/*
+!/public/books/.gitkeep
