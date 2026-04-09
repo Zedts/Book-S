@@ -116,12 +116,23 @@ export async function deleteCategory(id: string) {
       return { success: false, message: 'Unauthorized' };
     }
 
+    const booksCount = await prisma.book.count({
+      where: { categoryId: id },
+    });
+
+    if (booksCount > 0) {
+      return { 
+        success: false, 
+        message: `Kategori tidak dapat dihapus karena masih digunakan oleh ${booksCount} buku.` 
+      };
+    }
+
     await prisma.category.delete({ where: { id } });
     
     revalidatePath('/admin/categories');
     return { success: true, message: 'Kategori berhasil dihapus' };
   } catch (error) {
     console.error('Delete Category Error:', error);
-    return { success: false, message: 'Gagal menghapus kategori. Mungkin karena masih ada buku yang ditautkan.' };
+    return { success: false, message: 'Gagal menghapus kategori. Terjadi kesalahan sistem.' };
   }
 }

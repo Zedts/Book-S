@@ -114,6 +114,7 @@ export default function AdminCategories() {
         fetchAllCategories();
       } else {
         showNotification(res?.message || "Gagal menghapus kategori", "error");
+        setIsDeleteModalOpen(false);
       }
     } catch (error) {
       console.error(error);
