@@ -12,7 +12,8 @@ import AdminReportModal from "@/src/components/ui/AdminReportModal";
 import { AdminPageHeader } from "@/src/components/admin/AdminPageHeader";
 import { AdminNotificationModal } from "@/src/components/admin/AdminNotificationModal";
 import { AdminStatCard } from "@/src/components/admin/AdminStatCard";
-import { cn, formatCurrency, calculateTrendPercentage } from "@/src/lib/utils";
+import { AdminStatusBadge } from "@/src/components/admin/AdminStatusBadge";
+import { formatCurrency, calculateTrendPercentage } from "@/src/lib/utils";
 import { getAllOrders, getOrderStats } from "@/src/lib/actions/order";
 import { getBooks, getTopBooks } from "@/src/lib/actions/book";
 import type { OrderItem, OrderStats } from "@/src/types/order";
@@ -214,45 +215,48 @@ export default function AdminHome() {
             <h2 className="text-xl font-bold text-slate-800">Transaksi Terbaru</h2>
             <GlassCard className="overflow-hidden">
               <div className="overflow-x-auto no-scrollbar">
-                <table className="w-full text-left border-collapse">
+                <table className="w-full text-left whitespace-nowrap min-w-[700px]">
                   <thead>
-                    <tr className="bg-slate-50/50 border-b border-slate-200/50">
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">ID Transaksi</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Pembeli</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Tanggal</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Nominal</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Status</th>
+                    <tr className="border-b border-slate-200 bg-slate-50/50 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      <th className="px-6 py-4">ID Pesanan</th>
+                      <th className="px-6 py-4">Pelanggan</th>
+                      <th className="px-6 py-4">Tanggal</th>
+                      <th className="px-6 py-4">Total</th>
+                      <th className="px-6 py-4">Metode Bayar</th>
+                      <th className="px-6 py-4 text-right">Status Pembayaran</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {recentOrders.map((order) => (
-                      <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
+                      <tr key={order.id} className="hover:bg-slate-50/50 transition-colors group">
                         <td className="px-6 py-4">
-                          <span className="font-mono text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-1 rounded-md">
-                            {order.id.slice(0, 8).toUpperCase()}
-                          </span>
+                          <span className="font-mono text-sm text-slate-600 font-medium">{order.id.slice(0, 8).toUpperCase()}...</span>
                         </td>
-                        <td className="px-6 py-4 font-bold text-slate-800">{order.user.fullName}</td>
-                        <td className="px-6 py-4 text-sm text-slate-500">
+                        <td className="px-6 py-4">
+                          <div className="font-bold text-slate-800">{order.user.fullName}</div>
+                          <div className="text-xs text-slate-500 mt-0.5">{order.user.email}</div>
+                        </td>
+                        <td className="px-6 py-4 text-slate-500 font-medium">
                           {new Date(order.createdAt).toLocaleDateString("id-ID", {
                             day: "numeric",
-                            month: "short"
+                            month: "short",
+                            year: "numeric"
                           })}
                         </td>
-                        <td className="px-6 py-4 font-semibold text-slate-800">{formatCurrency(order.total)}</td>
+                        <td className="px-6 py-4 font-bold text-slate-800">
+                          {formatCurrency(order.total)}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="capitalize text-slate-600 font-medium">{order.paymentMethod}</span>
+                        </td>
                         <td className="px-6 py-4 text-right">
-                          <span className={cn(
-                            "inline-flex px-2.5 py-1 text-[10px] font-bold rounded-full border uppercase",
-                            order.status === 'completed' ? "bg-emerald-50 text-emerald-700 border-emerald-200/50" : "bg-blue-50 text-blue-700 border-blue-200/50"
-                          )}>
-                            {order.status}
-                          </span>
+                          <AdminStatusBadge status={order.paymentStatus} type="payment" size="sm" />
                         </td>
                       </tr>
                     ))}
                     {recentOrders.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                        <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
                           Belum ada transaksi terbaru.
                         </td>
                       </tr>
@@ -261,7 +265,7 @@ export default function AdminHome() {
                 </table>
               </div>
               <div className="p-4 border-t border-slate-200/50 bg-slate-50/30">
-                <Button variant="ghost" fullWidth className="text-slate-600 font-semibold hover:bg-slate-100">
+                <Button variant="ghost" fullWidth className="text-slate-600 font-semibold hover:bg-slate-100" onClick={() => router.push("/admin/transactions")}>
                   Lihat Semua Transaksi
                 </Button>
               </div>
