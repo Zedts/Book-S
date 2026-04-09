@@ -95,6 +95,7 @@ export const CartOrdersSummaryModal: React.FC<CartOrdersSummaryModalProps> = ({
                 </div>
                 {visibleCartItems.map((item: any) => (
                   <div key={item.id} className="flex gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                       src={item.book.imageUrl || '/placeholder-book.jpg'} 
                       alt={item.book.title} 

@@ -29,8 +29,6 @@ export default function UserMyBooks() {
   const [selectedRatingBook, setSelectedRatingBook] = useState<{ id: string; title: string } | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
 
-  if (!user) return null;
-
   // Optimized filter logic
   const { readingBooks, completedBooks, pendingOrders } = useMemo(() => {
     const pending = orders.filter(o => o.status === 'pending');
@@ -45,6 +43,8 @@ export default function UserMyBooks() {
 
     return { readingBooks: reading, completedBooks: completed, pendingOrders: pending };
   }, [orders, progresses]);
+
+  if (!user) return null;
 
   return (
     <UserLayout>

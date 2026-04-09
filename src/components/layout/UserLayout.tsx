@@ -1,7 +1,12 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Menu, BookOpen } from "lucide-react";
 import UserSidebar from "./UserSidebar";
 import { useScrollReveal } from "@/src/hooks/useScrollReveal";
+import { useRequireRole } from "@/src/hooks/useRequireRole";
+import { FloatingChatWidget } from "@/src/components/ui/FloatingChatWidget";
+import { UserChat } from "@/src/components/user/UserChat";
 import { cn } from "@/src/lib/utils";
 
 export default function UserLayout({ children }: { children: React.ReactNode }) {
@@ -9,12 +14,13 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
+  const { user } = useRequireRole("users");
+
   useScrollReveal();
 
   useEffect(() => {
     const savedState = localStorage.getItem("sidebar-collapsed");
     if (savedState !== null) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsCollapsed(savedState === "true");
     }
     setMounted(true);
@@ -86,6 +92,13 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
           {children}
         </div>
       </main>
+
+      {/* Floating Chat Integration */}
+      {user && (
+        <FloatingChatWidget title="Customer Service">
+          <UserChat userId={user.id} />
+        </FloatingChatWidget>
+      )}
     </div>
   );
 }

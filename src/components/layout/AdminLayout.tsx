@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { Menu, ShieldCheck } from "lucide-react";
 import AdminSidebar from "./AdminSidebar";
 import { useScrollReveal } from "@/src/hooks/useScrollReveal";
+import { useRequireRole } from "@/src/hooks/useRequireRole";
+import { FloatingChatWidget } from "@/src/components/ui/FloatingChatWidget";
+import { AdminChat } from "@/src/components/admin/AdminChat";
 import { cn } from "@/src/lib/utils";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -11,12 +14,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);  
 
+  const { user } = useRequireRole("admin");
+
   useScrollReveal();
 
   useEffect(() => {
     const savedState = localStorage.getItem("admin-sidebar-collapsed");
     if (savedState !== null) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsCollapsed(savedState === "true");
     }
     setMounted(true);
@@ -88,6 +92,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {children}
         </div>
       </main>
+
+      {/* Floating Chat Integration */}
+      {user && (
+        <FloatingChatWidget title="Chat Masuk">
+          <AdminChat adminId={user.id} />
+        </FloatingChatWidget>
+      )}
     </div>
   );
 }

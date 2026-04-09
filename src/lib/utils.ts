@@ -23,3 +23,20 @@ export function calculateTrendPercentage(current: number, previous: number): { v
   };
 }
 
+export function formatChatTime(date: string | Date): string {
+  const d = new Date(date);
+  return d.toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+}
+
+export function formatDate(date: string | Date): string {
+  return new Date(date).toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
+}
+

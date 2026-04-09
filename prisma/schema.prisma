@@ -25,6 +25,8 @@ model User {
   progresses UserBookProgress[]
   favorites  Favorite[]
   ratings    Rating[]
+  sentMessages ChatMessage[] @relation("SentMessages")
+  receivedMessages ChatMessage[] @relation("ReceivedMessages")
 }
 
 model Category {
@@ -142,4 +144,16 @@ model Rating {
   book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@unique([userId, bookId])
+}
+
+model ChatMessage {
+  id         String   @id @default(uuid())
+  senderId   String
+  receiverId String?
+  message    String   @db.Text
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver   User?    @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 }

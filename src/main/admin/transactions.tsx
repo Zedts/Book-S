@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+ 
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,7 +6,7 @@ import AdminLayout from "@/src/components/layout/AdminLayout";
 import { GlassCard } from "@/src/components/ui/GlassCard";
 import { Button } from "@/src/components/ui/Button";
 import Modal from "@/src/components/ui/Modal";
-import { Search, Loader2, ArrowUpRight, DollarSign, ShoppingBag, Clock, FileText, Receipt, X } from "lucide-react";
+import { Loader2, DollarSign, ShoppingBag, Clock, FileText, Receipt, X } from "lucide-react";
 import { getAllOrders, getOrderStats } from "@/src/lib/actions/order";
 import { formatCurrency } from "@/src/lib/utils";
 

@@ -6,7 +6,7 @@ import { GlassCard } from "@/src/components/ui/GlassCard";
 import { Button } from "@/src/components/ui/Button";
 import Modal from "@/src/components/ui/Modal";
 import Notification from "@/src/components/ui/Notification";
-import { Plus, Search, Edit2, Trash2, Loader2, AlertTriangle, Hash, LayoutGrid } from "lucide-react";
+import { Edit2, Trash2, Loader2, AlertTriangle, Hash, LayoutGrid } from "lucide-react";
 import { AdminPageHeader } from "@/src/components/admin/AdminPageHeader";
 import { AdminSearchToolbar } from "@/src/components/admin/AdminSearchToolbar";
 import { useNotification } from "@/src/hooks/useNotification";
@@ -169,7 +169,7 @@ export default function AdminCategories() {
                   <div className="w-12 h-12 rounded-xl bg-slate-50 group-hover:bg-indigo-50 group-hover:text-indigo-600 text-slate-400 flex items-center justify-center transition-colors">
                     <Hash className="w-6 h-6" />
                   </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1">
                     <button onClick={() => handleOpenEdit(category)} className="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors">
                       <Edit2 className="w-4 h-4" />
                     </button>

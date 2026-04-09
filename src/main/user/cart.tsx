@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+ 
 "use client";
 
 import { ShoppingCart, ShieldCheck, CreditCard, Wallet, Truck, PackageCheck } from "lucide-react";
@@ -298,7 +298,7 @@ export default function UserCart() {
                       {[
                         { label: 'Transfer Bank', icon: CreditCard },
                         { label: 'E-wallet', icon: Wallet },
-                        { label: 'COD', icon: Truck },
+                        { label: 'Cash', icon: Truck },
                       ].map((method) => (
                         <label key={method.label} className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === method.label ? 'border-indigo-500 bg-indigo-50' : 'border-slate-100 hover:border-slate-200 bg-white'}`}>
                           <input 
