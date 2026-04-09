@@ -9,7 +9,13 @@ import { FloatingChatWidget } from "@/src/components/ui/FloatingChatWidget";
 import { AdminChat } from "@/src/components/admin/AdminChat";
 import { cn } from "@/src/lib/utils";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({ 
+  children,
+  headerActions
+}: { 
+  children: React.ReactNode;
+  headerActions?: React.ReactNode;
+}) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);  
@@ -86,6 +92,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <span className="text-xl font-black tracking-tighter text-slate-800">Admin</span>
              </div>
           </div>
+
+          {headerActions && (
+            <div className="flex items-center gap-2">
+              {headerActions}
+            </div>
+          )}
         </nav>
 
         <div className="max-w-7xl mx-auto relative">

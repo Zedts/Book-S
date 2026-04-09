@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/src/components/layout/AdminLayout";
 import { GlassCard } from "@/src/components/ui/GlassCard";
-import { Trash2, Loader2, Users, User, Mail, Calendar, Edit2 } from "lucide-react";
+import { Trash2, Loader2, Users, User, Mail, Calendar, Edit2, Plus } from "lucide-react";
 import { getAllUsers, deleteUser, createUser, updateUser } from "@/src/lib/actions/user";
 import Notification from "@/src/components/ui/Notification";
 import { useNotification } from "@/src/hooks/useNotification";
@@ -146,7 +146,19 @@ export default function AdminUsers() {
   );
 
   return (
-    <AdminLayout>
+    <AdminLayout
+      headerActions={
+        <div className="flex md:hidden items-center gap-2">
+          <button 
+            onClick={openAddModal}
+            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-800 text-white text-xs font-bold rounded-xl shadow-sm hover:bg-slate-900 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Tambah Pengguna
+          </button>
+        </div>
+      }
+    >
       <div className="space-y-8 pb-12 reveal active">
         <AdminPageHeader 
           title="Kelola Pengguna" 

@@ -9,7 +9,13 @@ import { FloatingChatWidget } from "@/src/components/ui/FloatingChatWidget";
 import { UserChat } from "@/src/components/user/UserChat";
 import { cn } from "@/src/lib/utils";
 
-export default function UserLayout({ children }: { children: React.ReactNode }) {
+export default function UserLayout({ 
+  children,
+  headerActions
+}: { 
+  children: React.ReactNode;
+  headerActions?: React.ReactNode;
+}) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -85,8 +91,12 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
                 <BookOpen className="w-6 h-6 text-slate-800" />
                 <span className="text-xl font-black tracking-tighter text-slate-800">Book&apos;S</span>
              </div>
-          </div>
-        </nav>
+          </div>          
+          {headerActions && (
+            <div className="flex items-center gap-2">
+              {headerActions}
+            </div>
+          )}        </nav>
 
         <div className="max-w-7xl mx-auto">
           {children}

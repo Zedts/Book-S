@@ -114,7 +114,29 @@ export default function AdminHome() {
   ];
 
   return (
-    <AdminLayout>
+    <AdminLayout
+      headerActions={
+        <div className="flex md:hidden items-center gap-2">
+          <button 
+            onClick={() => setIsNotificationModalOpen(true)}
+            className="relative p-2 bg-white/60 backdrop-blur-md border border-slate-200/60 text-slate-600 rounded-xl hover:bg-white transition-colors shadow-sm"
+            aria-label="Notifikasi"
+          >
+            <Bell className="w-4 h-4" />
+            {adminNotifications.length > 0 && (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full border-2 border-white animate-pulse" />
+            )}
+          </button>
+          <button 
+            onClick={() => setIsReportModalOpen(true)}
+            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-800 text-white text-xs font-bold rounded-xl shadow-sm"
+          >
+            <ArrowUpRight className="w-3.5 h-3.5" />
+            Laporan
+          </button>
+        </div>
+      }
+    >
       <div className="space-y-8">
         <AdminPageHeader 
           title="Ringkasan Admin" 

@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/src/components/layout/AdminLayout";
 import { GlassCard } from "@/src/components/ui/GlassCard";
-import { Trash2, Edit2, Loader2, Book, Info } from "lucide-react";
+import { Trash2, Edit2, Loader2, Book, Info, Plus } from "lucide-react";
 import { getBooks, createBook, updateBook, deleteBook } from "@/src/lib/actions/book";
 import { getCategories } from "@/src/lib/actions/category";
 import Notification from "@/src/components/ui/Notification";
@@ -167,7 +167,19 @@ export default function AdminBooks() {
   );
 
   return (
-    <AdminLayout>
+    <AdminLayout
+      headerActions={
+        <div className="flex md:hidden items-center gap-2">
+          <button 
+            onClick={openAddModal}
+            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-800 text-white text-xs font-bold rounded-xl shadow-sm hover:bg-slate-900 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Tambah Buku
+          </button>
+        </div>
+      }
+    >
       <div className="space-y-8 pb-12 reveal active">
         <AdminPageHeader 
           title="Katalog Buku" 

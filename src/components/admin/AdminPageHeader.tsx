@@ -19,12 +19,12 @@ export const AdminPageHeader: React.FC<AdminPageHeaderProps> = ({
   children
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
         <h1 className="text-3xl font-bold text-slate-800 tracking-tight">{title}</h1>
         <p className="text-slate-500 mt-1">{description}</p>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="hidden md:flex items-center gap-3">
         {children}
         {actionLabel && onActionClick && (
           <button 

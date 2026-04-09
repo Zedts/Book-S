@@ -6,7 +6,7 @@ import { GlassCard } from "@/src/components/ui/GlassCard";
 import { Button } from "@/src/components/ui/Button";
 import Modal from "@/src/components/ui/Modal";
 import Notification from "@/src/components/ui/Notification";
-import { Edit2, Trash2, Loader2, AlertTriangle, Hash, LayoutGrid } from "lucide-react";
+import { Edit2, Trash2, Loader2, AlertTriangle, Hash, LayoutGrid, Plus } from "lucide-react";
 import { AdminPageHeader } from "@/src/components/admin/AdminPageHeader";
 import { AdminSearchToolbar } from "@/src/components/admin/AdminSearchToolbar";
 import { useNotification } from "@/src/hooks/useNotification";
@@ -129,7 +129,19 @@ export default function AdminCategories() {
   );
 
   return (
-    <AdminLayout>
+    <AdminLayout
+      headerActions={
+        <div className="flex md:hidden items-center gap-2">
+          <button 
+            onClick={handleOpenAdd}
+            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-800 text-white text-xs font-bold rounded-xl shadow-sm hover:bg-slate-900 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Kategori Baru
+          </button>
+        </div>
+      }
+    >
       <div className="space-y-6 pb-12 reveal active">
         <AdminPageHeader 
           title="Kategori" 

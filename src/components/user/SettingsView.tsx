@@ -380,7 +380,7 @@ function SecurityTab({ passwordForm, setPasswordForm, isSavingPassword, onSavePa
 
 interface SettingsViewProps {
   requiredRole: 'admin' | 'users';
-  Layout: React.ComponentType<{ children: React.ReactNode }>;
+  Layout: React.ComponentType<{ children: React.ReactNode; headerActions?: React.ReactNode }>;
 }
 
 export default function SettingsView({ requiredRole, Layout }: SettingsViewProps) {

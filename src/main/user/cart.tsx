@@ -214,7 +214,18 @@ export default function UserCart() {
     .reduce((acc, c) => acc + (c.book.price * c.quantity), 0);
 
   return (
-    <UserLayout>
+    <UserLayout
+      headerActions={
+        <Button 
+          className="md:hidden gap-1.5 rounded-xl h-9 px-3 border-slate-200/60 bg-white/50 backdrop-blur-md shadow-sm hover:bg-slate-50 text-xs font-bold text-slate-700"
+          variant="outline"
+          onClick={() => setIsOrdersModalOpen(true)}
+        >
+          <PackageCheck className="w-4 h-4" />
+          Pesanan Saya
+        </Button>
+      }
+    >
       <div className="space-y-8 pb-32">
         <header className="on-load-reveal flex flex-col md:flex-row items-center justify-between gap-6 border-b border-slate-200/60 pb-8">
           <div className="space-y-2 text-center md:text-left">
@@ -229,7 +240,7 @@ export default function UserCart() {
             </p>
           </div>
           <Button 
-            className="shrink-0 gap-2 rounded-2xl md:ml-auto"
+            className="hidden md:flex shrink-0 gap-2 rounded-2xl md:ml-auto"
             variant="outline"
             onClick={() => setIsOrdersModalOpen(true)}
           >

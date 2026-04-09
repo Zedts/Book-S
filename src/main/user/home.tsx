@@ -66,7 +66,35 @@ export default function UserHome({
   const isSearching = searchQuery.trim().length > 0 || activeCategory !== "all";
 
   return (
-    <UserLayout>
+    <UserLayout
+      headerActions={
+        <div className="flex md:hidden items-center gap-2">
+          <div className="relative group">
+            <button 
+              onClick={() => setIsNotificationModalOpen(true)}
+              className="w-9 h-9 rounded-xl bg-white/60 backdrop-blur-md border border-slate-200/60 flex items-center justify-center text-slate-600 hover:bg-white transition-all shadow-sm"
+            >
+              <Bell className="w-4 h-4" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full" />
+              )}
+            </button>
+          </div>
+          <div className="relative group">
+            <button 
+              onClick={() => setIsCartModalOpen(true)}
+              className="w-9 h-9 rounded-xl bg-white/60 backdrop-blur-md border border-slate-200/60 flex items-center justify-center text-slate-600 hover:bg-white transition-all shadow-sm"
+              aria-label="Keranjang dan Pesanan"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              {(totalCartCount > 0 || activeOrdersCount > 0) && (
+                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full" />
+              )}
+            </button>
+          </div>
+        </div>
+      }
+    >
       {/* Top Header Section */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
         <div className="flex-1 max-w-2xl">
@@ -76,7 +104,7 @@ export default function UserHome({
           <p className="text-slate-500 font-medium">Buku apa yang ingin anda baca hari ini?</p>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3">
           <div className="relative group">
             <button 
               onClick={() => setIsNotificationModalOpen(true)}

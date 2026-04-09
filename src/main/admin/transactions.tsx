@@ -2,13 +2,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import AdminLayout from "@/src/components/layout/AdminLayout";
 import { GlassCard } from "@/src/components/ui/GlassCard";
 import { Button } from "@/src/components/ui/Button";
 import Modal from "@/src/components/ui/Modal";
-import { Loader2, DollarSign, ShoppingBag, Clock, FileText, Receipt, X } from "lucide-react";
+import { Loader2, DollarSign, ShoppingBag, Clock, FileText, Receipt, Printer, ExternalLink } from "lucide-react";
 import { getAllOrders, getOrderStats } from "@/src/lib/actions/order";
 import { formatCurrency } from "@/src/lib/utils";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 import { AdminPageHeader } from "@/src/components/admin/AdminPageHeader";
 import { AdminSearchToolbar } from "@/src/components/admin/AdminSearchToolbar";
@@ -17,6 +20,7 @@ import { AdminStatCard } from "@/src/components/admin/AdminStatCard";
 import type { OrderItem, OrderStats } from "@/src/types/order";
 
 export default function AdminTransactions() {
+  const router = useRouter();
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [stats, setStats] = useState<OrderStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,13 +34,66 @@ export default function AdminTransactions() {
     setIsInvoiceModalOpen(true);
   };
 
+  const handlePrintPDF = (order: OrderItem) => {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(20);
+    doc.text("Invoice Pembelian Book'S", 14, 22);
+    
+    doc.setFontSize(10);
+    doc.text(`ID Pesanan : ${order.id.toUpperCase()}`, 14, 32);
+    doc.text(`Tanggal    : ${new Date(order.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}`, 14, 38);
+    
+    doc.text("Informasi Pelanggan:", 14, 50);
+    doc.setFont("helvetica", "bold");
+    doc.text(order.user.fullName, 14, 56);
+    doc.setFont("helvetica", "normal");
+    doc.text(order.user.email, 14, 62);
+
+    doc.text(`Metode Pembayaran : ${order.paymentMethod}`, 140, 56);
+    doc.text(`Status Pembayaran : ${order.paymentStatus}`, 140, 62);
+
+    const tableData = order.orderItems.map((item, index) => [
+      index + 1,
+      item.book.title,
+      item.quantity || 1, // fallback quantity to 1 if it's not explicitly stated
+      formatCurrency(item.price),
+      formatCurrency(item.price * (item.quantity || 1))
+    ]);
+
+    autoTable(doc, {
+      startY: 75,
+      head: [["No.", "Judul Buku", "Qty", "Harga Satuan", "Subtotal"]],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [51, 65, 85] },
+      styles: { fontSize: 9 }
+    });
+
+    // typescript workaround for autotable
+    const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable?.finalY || 75;
+    
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Total Pembayaran : ${formatCurrency(order.total)}`, 14, finalY + 15);
+
+    doc.save(`Invoice-${order.id.slice(0, 8).toUpperCase()}.pdf`);
+  };
+
   const fetchData = async () => {
     try {
       const [ordersRes, statsRes] = await Promise.all([
         getAllOrders(),
         getOrderStats()
       ]);
-      if (Array.isArray(ordersRes)) setOrders(ordersRes as unknown as OrderItem[]);
+      if (Array.isArray(ordersRes)) {
+        const allOrders = ordersRes as unknown as OrderItem[];
+        const filteredByStatus = allOrders.filter((order) => {
+          const pStatus = (order.paymentStatus || "").toLowerCase();
+          return ["unchecked", "paid", "failed"].includes(pStatus);
+        });
+        setOrders(filteredByStatus);
+      }
       if (statsRes) setStats(statsRes);
     } catch (error) {
       console.error("Failed to load transactions:", error);
@@ -120,7 +177,7 @@ export default function AdminTransactions() {
                     <th className="px-6 py-4">Tanggal</th>
                     <th className="px-6 py-4">Total</th>
                     <th className="px-6 py-4">Metode Bayar</th>
-                    <th className="px-6 py-4">Status Pesanan</th>
+                    <th className="px-6 py-4">Status Pembayaran</th>
                     <th className="px-6 py-4 text-right">Aksi</th>
                   </tr>
                 </thead>
@@ -145,13 +202,10 @@ export default function AdminTransactions() {
                         {formatCurrency(order.total)}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="capitalize text-slate-600 font-medium">{order.paymentMethod}</span>
-                          <AdminStatusBadge status={order.paymentStatus} type="payment" size="sm" />
-                        </div>
+                        <span className="capitalize text-slate-600 font-medium">{order.paymentMethod}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <AdminStatusBadge status={order.status} size="sm" />
+                        <AdminStatusBadge status={order.paymentStatus} type="payment" size="sm" />
                       </td>
                       <td className="px-6 py-4 text-right">
                         <button
@@ -232,9 +286,15 @@ export default function AdminTransactions() {
             </div>
 
             <div className="flex gap-3 justify-end">
-              <Button variant="outline" onClick={() => setIsInvoiceModalOpen(false)}>
-                <X className="w-4 h-4 mr-2" />
-                Tutup
+              {(selectedInvoice.paymentStatus.toLowerCase() === "paid" || selectedInvoice.paymentStatus.toLowerCase() === "failed") && (
+                <Button variant="outline" onClick={() => handlePrintPDF(selectedInvoice)}>
+                  <Printer className="w-4 h-4 mr-2" />
+                  Print PDF
+                </Button>
+              )}
+              <Button variant="primary" onClick={() => router.push("/admin/orders")}>
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Proses Pesanan
               </Button>
             </div>
           </div>
